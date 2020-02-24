@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.meet.mapper.CommentMapperCustom">
+    <resultMap id="BaseResultMap" type="com.meet.pojo.vo.CommentVO">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="rating" property="rating" jdbcType="INTEGER" />
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="name" property="userName" jdbcType="VARCHAR"/>
+        <result column="book_id" property="bookId" jdbcType="INTEGER"/>
+        <result column="isbn" property="bookIsbn" jdbcType="VARCHAR"/>
+        <result column="title" property="bookName" jdbcType="VARCHAR"/>
+        <result column="create_date" property="createDate" jdbcType="TIMESTAMP"/>
+        <result column="state" property="state" jdbcType="VARCHAR"/>
+        <result column="appoint_id" property="appointId" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="listByBook" resultMap="BaseResultMap" parameterType="Integer">
+        select * from comment c
+        left join user u on u.id = c.user_id
+        left join book b on b.id = c.book_id
+        where
+        1=1
+        <if test="bookId!=null and bookId!=''">
+            and c.book_id = #{bookId}
+        </if>
+        <if test="state==1">
+            and state = 'pass'
+        </if>
+        order by create_date desc
+
+    </select>
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.meet.mapper.NewsMapper" >
+  <resultMap id="BaseResultMap" type="com.meet.pojo.News" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <select id="queryNewsByTitle" resultMap="BaseResultMap" parameterType="String">
+
+    select * from news n
+    where
+    1 = 1
+    <if test="title!=null and title!=''">
+      and title like '%${title}%'
+    </if>
+    order by create_date desc
+
+  </select>
+</mapper>

@@ -1,0 +1,151 @@
+<div th:fragment="html">
+    <script>
+        $(function(){
+            var id = getUrlParms("id");
+            var data4Vue = {
+                bean:{},
+                tss:[],
+                ts:{},
+                date:0,
+                messages:[],
+                pagination:{},
+                now:'',
+                booking:'',
+                tid:'',
+                remark:'',
+                msgFromMyModal:'',
+                user:{name:'', password:''}
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    // linkDefaultActions();
+                    this.list(0);
+                    this.getTimeSlot(this.date);
+                    this.load();
+                },
+                methods: {
+                    load:function() {
+                        var url = "venues/" + id+"/show";
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            vue.bean = result.data;
+                            console.log(vue.bean);
+                            vue.$nextTick(function () {
+                                imgAndInfoPageRegisterListeners(vue);
+                                dateListener(vue);
+                                remarkListener(vue);
+                            })
+                        });
+                    },
+                    list:function(start) {
+                        var now = new Date().getHours();
+                        this.now = now;
+                        var url2 =  "venues/"+id+"/messages/show?start="+start;
+                        axios.get(url2).then(function(response) {
+                            console.log(response.data);
+
+                            vue.pagination = response.data.data;
+                            vue.messages = response.data.data.content;
+                        });
+                    },
+                    getTimeSlot:function(date){
+                        var url =  "venues/"+id+"/timeSlots?date="+date;
+                        axios.get(url).then(function(response) {
+                            console.log(response.data);
+                            vue.tss = response.data.data;
+                            console.log(vue.tss);
+                        });
+                    },
+                    buy: function(tid,remark){
+                        var url =  "bookings/buy/"+tid+"?remark="+remark;
+                        axios.get(url).then(function(response) {
+                            var res = response.data.status;
+                            if(res==200) {
+                                vue.booking = response.data.data;
+                                console.log(vue.booking);
+                                $("#myModal").modal('show');
+                                vue.getTimeSlot(vue.date);
+                            } else if(res==501) {
+                                $("#loginModal").modal('show');
+                            }
+
+                        });
+                        $("#remarkEnterModal").modal('hide');
+
+                    },
+                    jump: function(page){
+                        jump(page,vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function(start){
+                        jumpByNumber(start,vue);
+                    },
+                    login:function(){
+                        var url =  "login";
+                        if(0==this.user.name.length){
+                            $("span.errorMessage").html("请输入用户名");
+                            $("div.loginErrorMessageDiv").css("visibility","visible");
+                            return;
+                        }
+                        if(0==this.user.password.length){
+                            $("span.errorMessage").html("请输入密码");
+                            $("div.loginErrorMessageDiv").css("visibility","visible");
+                            return;
+                        }
+
+                        axios.post(url,this.user).then(function(response) {
+                            var result = response.data;
+                            if(result.status==200){
+                                // console.log(result.data);
+                                location.href="venue?id="+id;
+                            }
+                            else{
+                                $("span.errorMessage").html(result.msg);
+                                $("div.loginErrorMessageDiv").css("visibility","visible");
+                            }
+                        });
+                    }
+                }
+            });
+
+
+        });
+    </script>
+
+    <div style="position: relative">
+        <div style="position: absolute;z-index: 1">
+            <img src="img/3.jpg" style="height: 100%;width: 100%">
+        </div>
+        <div style="position: absolute;z-index: 2;background-color:rgba(255,255,255,0.6);width: 1265px;height:790px">    </div>
+        <div style="position: absolute;z-index:3;width: 100%;height: 100%">
+            <div align="center">
+                <form action="forevenues" method="get" >
+                    <div class="searchDiv" style="position: relative">
+                        <div style="position: absolute;z-index: 1">
+                            <input type="text" name="keyword" placeholder="请输入场馆名" />
+                        </div>
+                        <div style="position: absolute;z-index:2;right: 0px">
+                            <button  type="submit" class="searchButton btn-primary">搜索</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="productPageDiv" style="margin-bottom: 0px">
+                <div th:replace="include/fore/venue/imgAndInfo::html" ></div>
+                <div th:replace="include/fore/venue/makeOrder::html" ></div>
+                <div th:replace="include/fore/venue/review::html" ></div>
+            </div>
+        </div>
+    </div>
+
+<!--    <div class="productPageDiv" style="margin-bottom: 0px">-->
+<!--        <div th:replace="include/fore/venue/imgAndInfo::html" ></div>-->
+<!--        <div th:replace="include/fore/venue/makeOrder::html" ></div>-->
+<!--&lt;!&ndash;        <div th:replace="include/fore/venue/review::html" ></div>&ndash;&gt;-->
+<!--    </div>-->
+
+<!--    <div style="height:200px"></div>-->
+</div>

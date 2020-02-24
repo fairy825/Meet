@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.meet.mapper.BookMapper" >
+  <resultMap id="BaseResultMap" type="com.meet.pojo.Book" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="isbn" property="isbn" jdbcType="VARCHAR" />
+    <result column="douban_id" property="doubanId" jdbcType="INTEGER" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="author" property="author" jdbcType="VARCHAR" />
+    <result column="publishing_house" property="publishingHouse" jdbcType="VARCHAR" />
+    <result column="total_num" property="totalNum" jdbcType="INTEGER" />
+    <result column="stock" property="stock" jdbcType="INTEGER" />
+    <result column="rating" property="rating" jdbcType="REAL" />
+    <result column="tag" property="tag" jdbcType="VARCHAR" />
+    <result column="rec_book" property="recBook" jdbcType="VARCHAR" />
+    <result column="review_tag" property="reviewTag" jdbcType="VARCHAR" />
+    <result column="eigen_vec" property="eigenVec" jdbcType="VARCHAR" />
+    <result column="emotion_vec" property="emotionVec" jdbcType="VARCHAR" />
+    <result column="recommended" property="recommended" jdbcType="TINYINT" />
+    <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <update id="reduceStock" parameterType="Integer">
+
+  	update book
+  	set stock = stock-1
+  	where id = #{id}
+
+  </update>
+  <update id="addStock" parameterType="Integer">
+
+  	update book
+  	set stock = stock+1
+  	where id = #{id}
+
+  </update>
+  <select id="queryByTitleLike" resultMap="BaseResultMap" parameterType="String">
+
+    select * from book b
+    where
+    1 = 1
+    <if test="title!=null and title!=''">
+      and title like '%${title}%'
+    </if>
+    order by updated_time desc
+
+  </select>
+  <select id="queryByCategory" resultMap="BaseResultMap" parameterType="Integer">
+    select * from book b left join category_book cb on cb.book_id=b.id
+    where
+    cb.category_id = #{cid}
+    order by updated_time desc
+  </select>
+  <select id="searchByCid" resultMap="BaseResultMap">
+
+    select * from book b left join category_book cb on cb.book_id=b.id
+    where
+     rating >= #{minRating}
+    and stock >= #{stock}
+      and cb.category_id = #{cid}
+    <if test="title!=null and title!=''">
+      and title like '%${title}%'
+    </if>
+    <if test="author!=null and author!=''">
+      and author like '%${author}%'
+    </if>
+    <if test="publishing_house!=null and publishing_house!=''">
+    and publishing_house like '%${publishing_house}%'
+  </if>
+    <if test="isbn!=null and isbn!=''">
+      and isbn like '%${isbn}%'
+    </if>
+    order by updated_time desc
+
+  </select>
+  <select id="search" resultMap="BaseResultMap">
+
+    select * from book b left join category_book cb on cb.book_id=b.id
+    where
+    rating >= #{minRating}
+    and stock >= #{stock}
+    <if test="title!=null and title!=''">
+      and title like '%${title}%'
+    </if>
+    <if test="author!=null and author!=''">
+      and author like '%${author}%'
+    </if>
+    <if test="publishing_house!=null and publishing_house!=''">
+      and publishing_house like '%${publishing_house}%'
+    </if>
+    <if test="isbn!=null and isbn!=''">
+      and isbn like '%${isbn}%'
+    </if>
+    order by updated_time desc
+
+  </select>
+</mapper>

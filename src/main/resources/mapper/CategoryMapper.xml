@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.meet.mapper.CategoryMapper">
+    <resultMap id="BaseResultMap" type="com.meet.pojo.Category">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="queryCategoryByName" resultMap="BaseResultMap" parameterType="String">
+
+        select * from category c
+        where
+        1 = 1
+        <if test="name!=null and name!=''">
+            and name like '%${name}%'
+        </if>
+
+    </select>
+    <select id="queryByBook" resultMap="BaseResultMap" parameterType="Integer">
+    select * from category c left join category_book cb on cb.category_id=c.id
+    where
+    cb.book_id = #{bid}
+  </select>
+</mapper>

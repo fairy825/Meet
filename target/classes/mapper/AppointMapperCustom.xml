@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.meet.mapper.AppointMapperCustom">
+    <resultMap id="BaseResultMap" type="com.meet.pojo.vo.AppointVO">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="book_id" property="bookId" jdbcType="INTEGER"/>
+        <result column="create_date" property="createDate" jdbcType="TIMESTAMP"/>
+        <result column="arrive_date" property="arriveDate" jdbcType="TIMESTAMP"/>
+        <result column="start_date" property="startDate" jdbcType="TIMESTAMP"/>
+        <result column="end_date" property="endDate" jdbcType="TIMESTAMP"/>
+        <result column="back_date" property="backDate" jdbcType="TIMESTAMP"/>
+        <result column="state" property="state" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="name" property="userName" jdbcType="VARCHAR"/>
+        <result column="nickname" property="userNickname" jdbcType="VARCHAR"/>
+        <result column="isbn" property="bookIsbn" jdbcType="VARCHAR"/>
+        <result column="title" property="bookName" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="search" resultMap="BaseResultMap" parameterType="String">
+        select * from appoint a
+        left join user u on u.id = a.user_id
+        left join book b on b.id = a.book_id
+        where
+        1=1
+        <if test="userName!=null and userName!=''">and name like '%${userName}%'
+        </if>
+        <if test="bookName!=null and bookName!=''">and title like '%${bookName}%'
+        </if>
+        <if test="bookIsbn!=null and bookIsbn!=''">and isbn like '%${bookIsbn}%'
+        </if>
+        <if test="state!=null and state!=''">
+            and state = #{state}
+        </if>
+        order by end_date desc
+
+    </select>
+  <select id="searchWithoutDelete" resultMap="BaseResultMap">
+    select * from appoint a
+    left join user u on u.id = a.user_id
+    left join book b on b.id = a.book_id
+    where
+    1=1
+    <if test="userId!=null and userId!=''">and u.id = #{userId}
+    </if>
+    <if test="bookName!=null and bookName!=''">and title like '%${bookName}%'
+    </if>
+    <if test="state!=null and state!=''">
+      and state = #{state}
+    </if>
+    order by end_date desc
+
+  </select>
+</mapper>

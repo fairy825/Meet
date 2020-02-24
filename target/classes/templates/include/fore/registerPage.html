@@ -1,0 +1,105 @@
+<div th:fragment="html">
+    <script>
+        $(function(){
+            var data4Vue = {
+                uri:'regist',
+                result: [],
+                user:{name:'', password:'', repeatpassword:''}
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){
+                },
+                methods: {
+                    register:function(){
+                        var url =  this.uri;
+                        console.log(this.user);
+                        if(0==this.user.name.length){
+                            $("span.errorMessage").html("请输入用户名");
+                            $("div.registerErrorMessageDiv").css("visibility","visible");
+                        }
+                        else if(0==this.user.password.length){
+                            $("span.errorMessage").html("请输入密码");
+                            $("div.registerErrorMessageDiv").css("visibility","visible");
+                        }
+                        else if(0==this.user.repeatpassword.length){
+                            $("span.errorMessage").html("请输入重复密码");
+                            $("div.registerErrorMessageDiv").css("visibility","visible");
+                        }
+                        else if(this.user.password !=this.user.repeatpassword){
+                            $("span.errorMessage").html("重复密码不一致");
+                            $("div.registerErrorMessageDiv").css("visibility","visible");
+                        }
+                        else {
+                            axios.post(url, this.user).then(function (response) {
+                                var result = response.data;
+                                if (result.status == 200) {
+                                    $("span.errorMessage").html("注册成功，请返回登录");
+                                    $("div.registerErrorMessageDiv").css("visibility", "visible");
+                                    setTimeout(function () {
+                                        window.location.href = 'login';
+                                    }, 3000);
+                                } else {
+                                    $("span.errorMessage").html(result.msg);
+                                    $("div.registerErrorMessageDiv").css("visibility", "visible");
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        })
+    </script>
+
+    <style>
+        .parentDiv{
+            position:relative;
+        }
+        .div1{
+            position:absolute;
+            z-index:1;
+        }
+        .div2{
+            position:absolute;
+            z-index:2;
+        }
+    </style>
+
+    <div class="parentDiv">
+        <div class="div1">
+            <img src="img/gym.jpg" style="height: 100%;width: 100%">
+        </div>
+        <div class="div2">
+            <div class="registerDiv ">
+                <div class="registerErrorMessageDiv" style="height: 40px">
+                    <div class="alert alert-danger" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                        <span class="errorMessage"></span>
+                    </div>
+                </div>
+
+                <div style="margin: 0 auto">
+                        <label align="left" style="font-size: medium">设置会员名</label>
+                        <div style="margin-left: 25px">
+                            <label >用户名</label>
+                            <input class="form-control" style="width: 250px;" v-model="user.name" placeholder="会员名一旦设置成功，无法修改" ><br>
+                        </div>
+
+                        <label align="left" style="font-size: medium">设置登陆密码</label>
+                        <div style="margin-left: 25px">
+                            <label >登录密码</label>
+                            <input class="form-control" style="width:250px" v-model="user.password"  type="password"  placeholder="设置你的登陆密码" ><br>
+
+                            <label >密码确认</label>
+                            <input class="form-control" style="width: 250px" v-model="user.repeatpassword"   type="password"  placeholder="请再次输入你的密码" ><br><br>
+                            <a @click="register"><button class="btn btn-block btn-primary blueButton" style="width: 160px">提   交</button></a>
+                        </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>

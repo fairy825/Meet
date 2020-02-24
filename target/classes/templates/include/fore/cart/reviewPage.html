@@ -1,0 +1,188 @@
+
+<div th:fragment="html"> 
+	<script>
+		$(function(){
+			var vid = getUrlParms("vid");
+			var bid = getUrlParms("bid");
+	        var data4Vue = {
+	        		venue:'',
+				showReviews:false,
+				pagination:{},
+					reviews:[],
+	        		bean:{},
+				booking:{},
+				msgFromMyModal:'评论成功',
+				user:{name:'', password:''}
+			};
+	        //ViewModel
+	        var vue = new Vue({
+	            el: '#workingArea',
+	            data: data4Vue,
+	            mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+	            	// this.load();
+	            	this.getVenue();
+	            	this.list(0);
+	            },        
+	            methods: {
+
+					getVenue:function(){
+						var url = "venues/"+vid;
+						axios.get(url).then(function(response) {
+								vue.venue = response.data.data;
+								console.log(response.data.data);
+						})
+						url = "bookings/"+bid;
+						axios.get(url).then(function(response) {
+							vue.booking = response.data.data;
+							console.log(response.data.data);
+						})
+					},
+						list:function(start){
+	                    var url =  "venues/"+vid+"/messages/show?start="+start;
+	                    axios.get(url).then(function(response) {
+	                    	var result = response.data;
+	                    	console.log(result);
+							vue.pagination = response.data.data;
+							vue.reviews = response.data.data.content;
+
+							// vue.$nextTick(function(){
+	        	            // 	linkDefaultActions();
+	                        // })
+	                    });
+	            	},
+					jump: function(page){
+						jump(page,vue); //定义在adminHeader.html 中
+					},
+					jumpByNumber: function(start){
+						jumpByNumber(start,vue);
+					},
+	            	doreview:function(){
+	                    var url =  "messages/"+vid+"?bid="+bid;
+						console.log(vue.bean);
+
+						axios.post(url,this.bean).then(function(response) {
+							var res = response.data.status;
+							if(res==200) {
+								var result = response.data;
+								console.log(result.data);
+								vue.msgFromMyModal = "评论成功！请等待管理员审核！"
+								$("#myModal").modal('show');
+								setTimeout(function () {
+									$("#myModal").modal('hide');
+									vue.showReviews = true;
+									vue.list(0);
+								}, 2000);
+							} else if(res==501) {
+								$("#loginModal").modal('show');
+							}else{
+								vue.msgFromMyModal = response.data.msg;
+								$("#myModal").modal('show');
+								setTimeout(function () {
+									$("#myModal").modal('hide');
+									location.href="bought";
+								}, 2000);
+							}
+	                    });
+	            	},
+					login:function(){
+						var url =  "login";
+						if(0==this.user.name.length){
+							$("span.errorMessage").html("请输入用户名");
+							$("div.loginErrorMessageDiv").css("visibility","visible");
+							return;
+						}
+						if(0==this.user.password.length){
+							$("span.errorMessage").html("请输入密码");
+							$("div.loginErrorMessageDiv").css("visibility","visible");
+							return;
+						}
+
+						axios.post(url,this.user).then(function(response) {
+							var result = response.data;
+							if(result.status==200){
+								// console.log(result.data);
+								location.href="review?vid="+vid+"&bid="+bid;
+							}
+							else{
+								$("span.errorMessage").html(result.msg);
+								$("div.loginErrorMessageDiv").css("visibility","visible");
+							}
+						});
+					}
+	            }
+	        });       			
+		})	
+	</script>
+	<div style="position: relative">
+		<div style="position: absolute;z-index: 1">
+			<img src="img/3.jpg" style="height: 100%;width: 100%">
+		</div>
+		<div style="position: absolute;z-index: 2;background-color:rgba(255,255,255,0.6);width: 1265px;height:790px">    </div>
+		<div style="position: absolute;z-index:3;width: 100%;height: 100%">
+			<div style="position: relative">
+
+			<div class="reviewDiv">
+				<div class="reviewProductInfoDiv">
+					<div class="reviewProductInfoImg"><img v-if="null!=venue.firstVenueImage" width="400px" height="400px" :src="'img/venueImage/'+venue.id+'/'+venue.firstVenueImage.id+'.jpg'"></div>
+					<div class="reviewProductInfoRightDiv">
+						<div class="reviewProductInfoRightText" style="font-size: medium">
+							{{venue.name}}
+						</div>
+						<table class="reviewProductInfoTable">
+							<tr>
+								<td width="75px" style="font-weight: bold">价格:</td>
+								<td><span class="reviewProductInfoTablePrice">￥{{venue.price|formatMoneyFilter}}</span> 元 </td>
+							</tr>
+							<tr>
+								<td width="75px" style="font-weight: bold">预订时段:</td>
+								<td>{{booking.timeSlot.bookingDate}}</td>
+								<td>{{booking.timeSlot.beginTime}}:00</td>
+								<td>{{booking.timeSlot.endTime}}:00</td>
+							</tr>
+						</table>
+
+					</div>
+					<div style="clear:both"></div>
+				</div>
+
+				<div class="reviewStasticsDiv">
+					<div class="reviewStasticsLeft">
+						<div class="reviewStasticsLeftTop"></div>
+						<div class="reviewStasticsLeftContent">累计评价 <span class="reviewStasticsNumber"> {{venue.reviewCount}}</span></div>
+						<div class="reviewStasticsLeftFoot"></div>
+					</div>
+					<div class="reviewStasticsRight">
+						<div class="reviewStasticsRightEmpty"></div>
+						<div class="reviewStasticsFoot"></div>
+					</div>
+				</div>
+
+					<div v-show="showReviews" class="reviewDivlistReviews" style="margin-left: 170px;width: 840px">
+						<div v-for="r in reviews" class="reviewDivlistReviewsEach">
+							<div class="reviewDate">{{r.createDate}}</div>
+							<div class="reviewContent">{{r.content}}</div>
+							<div class="reviewUserInfo pull-right">{{r.user.anonymousName}}<span class="reviewUserInfoAnonymous">(匿名)</span></div>
+						</div>
+						<div th:replace="include/admin/adminPage::html" ></div>
+					</div>
+
+					<div v-show="!showReviews" class="makeReviewDiv">
+							<table class="makeReviewTable">
+								<tr>
+									<td class="makeReviewTableFirstTD" style="font-size: 14px;color: #363535;	font-weight: bold;">留言</td>
+									<td><textarea name="content" v-model.trim="bean.content" placeholder="请输入留言内容"></textarea></td>
+								</tr>
+								<tr class="submitTR">
+									<td colspan="2" align="center">
+										<a href="#nowhere"  @click="doreview" class="btn btn-success">提交</a>
+									</td>
+								</tr>
+							</table>
+					</div>
+			</div>
+
+			</div>
+		</div>
+	</div>
+
+</div>

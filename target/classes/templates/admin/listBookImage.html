@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('书籍管理')" ></head>
+<body>
+<div th:replace="include/admin/adminNavigator::html" ></div>
+<script>
+    $(function(){
+        var bid = getUrlParms("bid");
+        var data4Vue = {
+            uri:'bookimage',
+            detailProductImages: [],
+            book: '',
+            // category:'',
+            detailFile:''
+        };
+
+        //ViewModel
+        var vue = new Vue({
+            el: '#workingArea',
+            data: data4Vue,
+            mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                this.listDetails();
+                this.getBook(bid);
+            },
+            methods: {
+                getBook:function(bid){
+                    var url = "book/"+bid;
+                    axios.get(url).then(function(response) {
+                        vue.book = response.data.data;
+                        // vue.category = vue.product.category;
+                    })
+                },
+                listDetails:function(start){
+                    var url =  "book/"+bid+"/"+this.uri;
+                    axios.get(url).then(function(response) {
+                        vue.detailProductImages = response.data.data;
+                    });
+                },
+                addDetail: function () {
+                    if(!checkEmpty(this.detailFile, "书籍图片"))
+                        return;
+
+                    var url = this.uri+"?bid="+bid;
+
+                    var formData = new FormData();
+                    formData.append("image", this.detailFile);
+
+                    axios.post(url,formData).then(function(response){
+                        vue.listDetails();
+                        $("#detailPic").val('');
+                        vue.detailFile = null;
+                    });
+                },
+                deleteBean: function (id) {
+                    if(!checkDeleteLink())
+                        return;
+                    var url = this.uri+"/"+id;
+                    axios.delete(url).then(function(response){
+                        vue.listDetails();
+                    });
+                },
+                getDetailFile: function (event) {
+                    this.detailFile = event.target.files[0];
+                },
+            }
+
+        });
+    });
+
+</script>
+
+<div id="workingArea" >
+    <ol class="breadcrumb">
+        <li><a href="admin_category_list">所有分类</a></li>
+        <li><a href="admin_book_list">所有书籍</a></li>
+        <li class="active">{{book.name}}</li>
+        <li class="active">书籍图片管理</li>
+    </ol>
+
+    <table class="addPictureTable" align="center">
+        <tr>
+            <td class="addPictureTableTD">
+                <div>
+
+                    <div class="panel panel-warning addPictureDiv">
+                        <div class="panel-heading">新增书籍<b class="text-primary"> 详情 </b>图片</div>
+                        <div class="panel-body">
+                            <table class="addTable">
+                                <tr>
+                                    <td>
+                                        <input id="detailPic" type="file" @change="getDetailFile($event)" name="image" />
+                                    </td>
+                                </tr>
+                                <tr class="submitTR">
+                                    <td align="center">
+                                        <button type="submit" @click="addDetail" class="btn btn-success">提 交</button>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered table-hover  table-condensed">
+                        <thead>
+                        <tr class="success">
+                            <th>ID</th>
+                            <th>产品详情图片缩略图</th>
+                            <th>删除</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="pi in detailProductImages">
+                            <td>{{pi.id}}</td>
+                            <td>
+                                <a title="点击查看原图" :href="'img/bookimage/'+book.id+'/'+pi.id+'.jpg'"><img height="50px" :src="'img/bookimage_small/'+book.id+'/'+pi.id+'.jpg'"></a>
+                            </td>
+                            <td><a href="#nowhere" @click="deleteBean(pi.id)"><span class="glyphicon glyphicon-trash"></span></a></td>
+
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+
+
+<div th:replace="include/admin/adminFooter::html" ></div>
+</body>
+</html>
