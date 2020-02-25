@@ -62,13 +62,12 @@ nav.top div.row div {
 }
 
 div.searchDiv {
-	background-color:  #265a88;
+	background-color: #C40000;
 	width: 400px;
 	margin: 50px auto;
 	padding: 1px;
 	height: 40px;
 	display: block;
-	border-radius: 4px;
 }
 
 div.searchDiv input {
@@ -77,18 +76,15 @@ div.searchDiv input {
 	height: 36px;
 	margin: 1px;
 	outline:none;
-	border-radius: 4px;
 }
 
 div.searchDiv button {
-	width: 125px;
-	height: 39px;
+	width: 110px;
 	border: 1px solid transparent;
-	background-color:  #265a88;
+	background-color: #C40000;
 	color: white;
 	font-size: 20px;
 	font-weight: bold;
-	border-radius: 4px;
 }
 
 div.categoryWithCarousel {
@@ -452,22 +448,18 @@ div.loginDivInProductPage {
 }
 
 div.loginSmallDiv {
-	/*background-color:rgba(255,255,255,0.6);*/
-	/*align:center;*/
-	/*right: 300px;*/
+	background-color: white;
 	position: absolute;
-	top: 200px;
-	left: 35%;
+	right: 180px;
+	top: 180px;
 	width: 350px;
 	height: 400px;
 	padding: 60px 25px 80px 25px;
-	border-radius: 6px;
-	/*margin: auto;*/
 }
 
 div.loginErrorMessageDiv {
 	width: 300px;
-	/*position: absolute;*/
+	position: absolute;
 	top: 20px;
 	visibility: hidden;
 }
@@ -483,22 +475,18 @@ div.login_acount_text {
 }
 
 div.loginInput {
-	height: 40px;
-	width: 300px;
 	border: 1px solid #CBCBCB;
 	margin: 20px 0px;
-	border-radius: 6px;
 }
 
 div.loginInput input {
 	display: inline-block;
 	border: 0px solid transparent;
-	width: 259px;
-	height: 37px;
+	width: 244px;
+	height: 30px;
 	position: relative;
-	right: -38px;
-	top: -38px;
-	border-radius: 6px;
+	left: 6px;
+	top: 6px;
 }
 
 div.loginInput span, div.loginInput input {
@@ -506,15 +494,10 @@ div.loginInput span, div.loginInput input {
 }
 
 div.loginInput span.loginInputIcon {
-	/*margin: 0px;*/
+	margin: 0px;
 	background-color: #CBCBCB;
-	width: 38px;
-	height: 38px;
-	top: 0cm;
-	bottom: 0px;
-	left: -3px;
-	right: 2px;
-	border-radius: 4px;
+	width: 40px;
+	height: 40px;
 }
 
 span.loginInputIcon span.glyphicon {
@@ -532,21 +515,6 @@ button.redButton {
 	font-weight: bold;
 }
 
-button.blueButton{
-	color: white;
-	/*background-color:#2e6da4;*/
-	font-size: 14px;
-	font-weight: bold;
-	/*background-color: #265a88;*/
-	/*border-color: #245580;*/
-}
-
-/*button.blueButton.hover,*/
-/*button.blueButton.focus {*/
-	/*background-color: #265a88;*/
-	/*background-position: 0 -15px;*/
-/*}*/
-
 div.categorySortBar {
 	background-color: #FAF9F9;
 	margin: 40px 20px 20px 20px;
@@ -555,10 +523,9 @@ div.categorySortBar {
 
 
 table.categorySortBarTable td {
-	border: 2px solid #CCCCCC;
+	border: 1px solid #CCCCCC;
 	padding: 3px;
-	height: 40px;
-	/*border-radius: 4px;*/
+	height: 23px;
 }
 
 table.categorySortBarTable {
@@ -568,11 +535,11 @@ table.categorySortBarTable {
 
 table.categorySortBarTable td a {
 	color: #806F66;
-	font-size:15px;
+	font-size:12px;
 }
 
 table.categorySortBarTable td a:hover {
-	color: #265a88;
+	color: #C40000;
 }
 
 table.categorySortBarTable td.grayColumn {
@@ -605,8 +572,8 @@ div.categoryProducts {
 }
 
 div.productUnit {
-	width: 300px;
-	height: 350px;
+	width: 225px;
+	height: 338px;
 	border: 3px solid #fff;
 	background-color: white;
 	margin: 12px 5px;
@@ -615,8 +582,8 @@ div.productUnit {
 }
 
 div.productUnit:hover {
-	width: 300px;
-	border: 3px solid #CCCCCC;
+	width: 225px;
+	border: 3px solid #C40000;
 	padding: 0px;
 }
 
@@ -632,7 +599,7 @@ div.productUnitFrame{
 	border:1px solid #eee;
 }
 div.productUnitFrame:hover{
-	border:1px solid #CCCCCC;
+	border:1px solid #C40000;
 }
 
 div.productUnit span.productPrice {
@@ -747,13 +714,13 @@ div.simpleSearchDiv button {
 }
 
 div.imgAndInfo {
-	margin: 40px 10px 150px 30px;
+	margin: 40px 20px;
 }
 
 div.imgAndInfo img.bigImg {
 	width: 400px;
 	height: 400px;
-	/*padding: 20px;*/
+	padding: 20px;
 	border: 1px solid #F2F2F2;
 }
 
@@ -829,14 +796,14 @@ div.infoInimgAndInfo div.promotionDiv {
 }
 
 div.infoInimgAndInfo div.productPriceDiv {
-	/*background-image: url(../../img/1.jpg);*/
+	background-image: url(../../img/site/priceBackground.png);
 	height: 102px;
 	padding: 10px;
 	color: #666666;
 }
 
 div.infoInimgAndInfo span.originalPriceDesc {
-	color: #6C6C6C;
+	color: #999999;
 	display: inline-block;
 	width: 68px;
 }
@@ -859,7 +826,7 @@ div.infoInimgAndInfo span.originalPrice {
 	font-family: Arial;
 	font-size: 12px;
 	color: #333333;
-	text-decoration: underline;
+	text-decoration: line-through;
 }
 
 div.infoInimgAndInfo span.promotionPriceYuan {
@@ -879,7 +846,7 @@ div.infoInimgAndInfo span.promotionPrice {
 }
 
 div.infoInimgAndInfo div.productSaleAndReviewNumber {
-	margin: 0px;
+	margin: 20px 0px;
 	border-top-style: dotted;
 	border-top-color: #C9C9C9;
 	border-top-width: 1px;
@@ -974,7 +941,7 @@ div.productReviewDiv {
 }
 
 div.productReviewContentPart {
-	padding-top: 25px;
+	padding-top: 50px;
 }
 
 div.productDetailTopPart {
@@ -1077,8 +1044,8 @@ div.productReviewItem div.productReviewItemDesc {
 	width: 80%;
 	display: inline-block;
 	color: #333333;
-	/*height: 94px;*/
-	margin: 5px 15px;
+	height: 94px;
+	margin: 5px 20px;
 	float: left;
 }
 
@@ -1095,7 +1062,7 @@ div.productReviewItemContent {
 }
 
 div.productReviewItemDate {
-	/*margin: 15px 0px 0px 0px;*/
+	margin: 15px 0px 0px 0px;
 	color: #CCCCCC;
 }
 
@@ -1396,9 +1363,9 @@ div.aliPayPageLogo {
 
 div.aliPayPageDiv {
 	text-align: center;
-	/*padding-bottom: 40px;*/
-	/*max-width: 1013px;*/
-	/*margin: 0px auto;*/
+	padding-bottom: 40px;
+	max-width: 1013px;
+	margin: 10px auto;
 }
 
 span.confirmMoneyText {
@@ -1421,7 +1388,7 @@ img.aliPayImg {
 
 button.confirmPay {
 	background-color: #00AAEE;
-	border: 2px solid #00AAEE;
+	border: 1px solid #00AAEE;
 	text-align: center;
 	line-height: 31px;
 	font-size: 14px;
@@ -1429,12 +1396,6 @@ button.confirmPay {
 	color: white;
 	width: 107px;
 	margin-top: 20px;
-	border-radius: 4px;
-}
-
-button.confirmPay:hover{
-	background-color: #2b669a;
-	border: 2px solid #265a88;
 }
 
 div.payedDiv {
@@ -1804,7 +1765,7 @@ button.orderListItemConfirm:hover {
 button.orderListItemReview {
 	border: 1px solid #DCDCDC;
 	background-color: #fff;
-	border-radius: 4px;
+	border-radius: 2px;
 	color: #3C3C3C;
 	font-size: 12px;
 	font-weight: bold;
@@ -1812,9 +1773,8 @@ button.orderListItemReview {
 }
 
 button.orderListItemReview:hover {
-	border-color: #b9def0;
-	background-color: #c7ddef;
-	color:#3C3C3C ;
+	border-color: #C40000;
+	color: #C40000;
 }
 
 td.orderItemDeleteTD {
@@ -2004,12 +1964,12 @@ div.reviewDiv {
 
 div.reviewProductInfoRightDiv {
 	overflow: hidden;
-	border-top: 2px solid #E7E7E7;
+	border-top: 1px solid #E7E7E7;
 	padding: 30px 20px;
 }
 
 div.reviewProductInfoImg {
-	border: 2px solid #E7E7E7;
+	border: 1px solid #E7E7E7;
 	width: 464px;
 	text-align: center;
 	float: left;
@@ -2121,11 +2081,9 @@ div.reviewStasticsFoot {
 }
 
 div.makeReviewDiv {
-	/*border: 2px solid rgba(255,255,255,0.6);*/
-	border-radius: 4px;
+	border: 1px solid #D1CCC8;
 	margin: 20px 0px;
-	/*width: 500px;*/
-	/*background-color: rgba(255,255,255,0.6);*/
+	background-color: #EFEFEF;
 }
 
 div.makeReviewText {
@@ -2136,25 +2094,19 @@ div.makeReviewText {
 }
 
 table.makeReviewTable {
-	/*margin: 20px 40px;*/
-    margin: 20px 0px;
-    border: 2px solid #D1CCC8;
-    border-radius: 4px;
-
+	margin: 20px 40px;
 }
 
 table.makeReviewTable td {
-	border: 2px solid #E7E7E7;
+	border: 1px solid #E7E7E7;
 	padding: 10px;
 	background-color: white;
-	border-radius: 4px;
 }
 
 table.makeReviewTable textarea {
 	border-width: 0px;
 	resize: none;
-	width: 950px;
-	/*height: 120px;*/
+	width: 420px;
 	height: 120px;
 }
 
@@ -2179,20 +2131,8 @@ div.makeReviewButtonDiv button {
 }
 
 div.registerDiv {
-	/*margin: 10px 20px;*/
-	/*text-align: center;*/
-
-	align:center;
-	/*right: 300px;*/
-	background-color:rgba(255,255,255,0.6);
-	position: absolute;
-	top: 200px;
-	left: 35%;
-	width: 350px;
-	height: 500px;
-	padding: 50px 7px 80px 25px;
-	border-radius: 4px;
-	/*margin: auto;*/
+	margin: 10px 20px;
+	text-align: center;
 }
 
 table.registerTable {
@@ -2203,7 +2143,7 @@ table.registerTable {
 }
 
 table.registerTable td {
-	 	/*border:1px dotted skyblue !important;*/
+	/* 	border:1px dotted skyblue !important; */
 	padding: 10px 30px;
 }
 
@@ -2241,7 +2181,9 @@ table.registerTable button {
 	border-width: 0px;
 }
 
+table.registerTable {
 
+}
 
 div.registerSuccessDiv {
 	margin: 10px 20px;
@@ -2279,7 +2221,7 @@ div.reviewStasticsDiv {
 }
 
 div.registerErrorMessageDiv {
-	width: 300px;
+	width: 600px;
 	margin: 0px auto;
 	height: 50px;
 	visibility: hidden;
@@ -2293,22 +2235,25 @@ td.orderItemOrderInfoPartTD {
 	border: solid 1px #ECECEC;
 }
 
+div.reviewDate {
+	width: 100px;
+}
+
 div.reviewDivlistReviewsEach div {
 	display: inline-block;
 }
 
 div.reviewDate {
-	/*width: 100px;*/
-	/*color: #CCCCDD;*/
+	color: #CCCCDD;
 }
 
 div.reviewContent {
-	/*color: #333333;*/
+	color: #333333;
 	width: 698px;
 }
 
 div.reviewUserInfo {
-	/*color: #333333;*/
+	color: #333333;
 }
 
 div.reviewDivlistReviewsEach {
@@ -2317,7 +2262,7 @@ div.reviewDivlistReviewsEach {
 }
 
 span.reviewUserInfoAnonymous {
-	/*color: #CCCCDD;*/
+	color: #CCCCDD;
 	margin-left: 5px;
 }
 
@@ -2344,138 +2289,9 @@ table.cartProductTable th.selectAndImage{
 }
 
 table td{
-	font-size:14px;
+	font-size:12px;
 }
 input{
 	outline: none;
 }
 
-/*
-* Design by Robert Mayer:https://goo.gl/CJ7yC8
-*
-*I intentionally left out the line that was supposed to be below the subheader simply because I don't like how it looks.
-*
-* Chronicle Display Roman font was substituted for similar fonts from Google Fonts.
-*/
-
-
-.product-wrapper {
-	position:relative;
-	display: inline-grid;
-	margin-top: 80px;
-	margin-left: 6%;
-	height: 200px;
-	width: 300px;
-	border-radius: 7px 7px 7px 7px;
-	/* VIA CSS MATIC https://goo.gl/cIbnS */
-	-webkit-box-shadow: 0px 14px 32px 0px rgba(0, 0, 0, 0.15);
-	-moz-box-shadow: 0px 14px 32px 0px rgba(0, 0, 0, 0.15);
-	box-shadow: 0px 14px 32px 0px rgba(0, 0, 0, 0.15);
-}
-
-
-.product-img {
-	float: left;
-	height: 200px;
-	width: 200px;
-}
-
-.product-img img {
-	border-radius: 7px 0 0 7px;
-}
-
-.product-info {
-	float: left;
-	height: 200px;
-	width: 100px;
-	border-radius: 0 7px 10px 7px;
-	background-color: #ffffff;
-}
-
-.product-text {
-	height: 300px;
-	width: 100px;
-}
-
-.product-text h1 {
-	margin: 0 0 0 20px;
-	padding-top: 12px;
-	font-size: 34px;
-	color: #474747;
-}
-
-.product-text h1,
-.product-price-btn p {
-	font-family: 'Bentham', serif;
-}
-
-.product-text h2 {
-	margin: 0 0 30px 20px;
-	font-size: 13px;
-	font-family: 'Raleway', sans-serif;
-	font-weight: 300;
-	text-transform: uppercase;
-	color: #aaaaaa;
-	letter-spacing: 0.2em;
-}
-
-.product-text p {
-	height: 125px;
-	margin: 0 0 0 20px;
-	font-family: 'Playfair Display', serif;
-	color: #8d8d8d;
-	line-height: 1.7em;
-	font-size: 15px;
-	font-weight: lighter;
-	overflow: hidden;
-}
-
-.product-price-btn {
-	height: 60px;
-	width: 150px;
-	margin-top: 17px;
-	position: relative;
-}
-
-.product-price-btn p {
-	display: inline-block;
-	position: absolute;
-	top: -170px;
-	height: 50px;
-	font-family: 'Trocchi', serif;
-	margin: 0 0 0 10px;
-	font-size: 28px;
-	font-weight: lighter;
-	color: #020408;
-}
-
-product-span {
-	display: inline-block;
-	height: 50px;
-	font-family: 'Suranna', serif;
-	font-size: 34px;
-}
-
-.product-price-btn button {
-	float: left;
-	display: inline-block;
-	top: -170px;
-	height: 20px;
-	width: 100px;
-	box-sizing: border-box;
-	border: transparent;
-	border-radius: 60px;
-	font-family: 'Raleway', sans-serif;
-	font-size: 14px;
-	font-weight: 500;
-	text-transform: uppercase;
-	letter-spacing: 0.2em;
-	color: #ffffff;
-	background-color: #9cebd5;
-	cursor: pointer;
-	outline: none;
-}
-
-.product-price-btn button:hover {
-	background-color: #79b0a1;
-}

@@ -46,11 +46,24 @@ public class AdminArgumentResolver implements HandlerMethodArgumentResolver {
         HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
 
         String paramToken = request.getParameter(UserService.COOKI_NAME_TOKEN);
+        String adminId = getCookieValue(request, "adminId");
         String cookieToken = getCookieValue(request, UserService.COOKI_NAME_TOKEN);
-        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken))
-            return "admin/adminLogin";
+        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)){
+            response.sendRedirect("alogin");
+            return null;
+        }
         String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-        return adminService.getByToken(response, token);
+        String byToken = adminService.getToken(response, Integer.valueOf(adminId));
+        if(byToken==null) {//redistoken==null
+            response.sendRedirect("alogin");
+            return null;
+        }else if(byToken.equals(token)){
+            return adminService.queryAdminInfo(Integer.valueOf(adminId));
+        }else{//账号被挤出
+            response.sendRedirect("alogin");
+            return null;
+        }
+//        return byToken;
 //		return UserContext.getUser();
     }
 

@@ -83,21 +83,55 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserVO addCookie(HttpServletResponse response, String token, User user) {
+    public String getToken(HttpServletResponse response, Integer userId) {
+//        if (StringUtils.isEmpty(adminId)) {
+//            return null;
+//        }
+//		MiaoshaUser user = getById(Long.parseLong(redis.get(MIAOSHA_USER_REDIS_SESSION + ":" + token)));
+//        Admin admin = redis.get(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + token, Admin.class);
+        String token = redis.get(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId);
+        // 延长有效期 有效期以最后一次登录的时间为准 所以每次操作都需要更新ttl
+        if (userId != null&&token!=null) {
+            addCookie(response, token, userId);
+        }
+        return token;
+    }
+    @Override
+    public boolean addCookie(HttpServletResponse response, String token, Integer userId) {
         // 把token写到cookie当中 传给客户端
 //		redis.set(MIAOSHA_USER_REDIS_SESSION + ":" + token, user.getId().toString(), 3600*24*2);
-        redis.setBean(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + token, user, 3600 * 24 * 2);
+        redis.setBean(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId, token, 3600 * 24 * 2);
 //		redisService.set(MiaoshaUserKey.token, token, user);
         Cookie cookie = new Cookie(COOKI_NAME_TOKEN, token);
-        cookie.setMaxAge((int) redis.ttl(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + token));
+        Cookie cookie1 = new Cookie(USER_ID, String.valueOf(userId));
+        cookie.setMaxAge((int) redis.ttl(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId));
         cookie.setPath("/");
         response.addCookie(cookie);
+        cookie1.setMaxAge((int) redis.ttl(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId));
+        cookie1.setPath("/");
+        response.addCookie(cookie1);
 
-        UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(user, userVO);
-        userVO.setUserToken(token);
-        return userVO;
+//        AdminVO adminVO = new AdminVO();
+//        BeanUtils.copyProperties(admin, adminVO);
+//        adminVO.setAdminToken(token);
+        return true;
     }
+//    @Override
+//    public UserVO addCookie(HttpServletResponse response, String token, User user) {
+//        // 把token写到cookie当中 传给客户端
+////		redis.set(MIAOSHA_USER_REDIS_SESSION + ":" + token, user.getId().toString(), 3600*24*2);
+//        redis.setBean(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + token, user, 3600 * 24 * 2);
+////		redisService.set(MiaoshaUserKey.token, token, user);
+//        Cookie cookie = new Cookie(COOKI_NAME_TOKEN, token);
+//        cookie.setMaxAge((int) redis.ttl(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + token));
+//        cookie.setPath("/");
+//        response.addCookie(cookie);
+//
+//        UserVO userVO = new UserVO();
+//        BeanUtils.copyProperties(user, userVO);
+//        userVO.setUserToken(token);
+//        return userVO;
+//    }
 
     // 更新缓存时一定要先更新数据库再处理缓存
 //    public boolean updatePassword(String token, Integer id, String formPass) {
@@ -158,22 +192,17 @@ public class UserServiceImpl implements UserService {
         return pagedResult;
     }
 
-    public User getByToken(HttpServletResponse response, String token) {
-        if (StringUtils.isEmpty(token)) {
-            return null;
-        }
-//		MiaoshaUser user = getById(Long.parseLong(redis.get(MIAOSHA_USER_REDIS_SESSION + ":" + token)));
-        User user = redis.get(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + token, User.class);
-        // 延长有效期 有效期以最后一次登录的时间为准 所以每次操作都需要更新ttl
-        if (user != null) {
-            addCookie(response, token, user);
-        }
-        return user;
-    }
-
-    @Override
-    public void logout(String userId) {
-//        redis.del();
-    }
+//    public User getByToken(HttpServletResponse response, String token) {
+//        if (StringUtils.isEmpty(token)) {
+//            return null;
+//        }
+////		MiaoshaUser user = getById(Long.parseLong(redis.get(MIAOSHA_USER_REDIS_SESSION + ":" + token)));
+//        User user = redis.get(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + token, User.class);
+//        // 延长有效期 有效期以最后一次登录的时间为准 所以每次操作都需要更新ttl
+//        if (user != null) {
+//            addCookie(response, token, user);
+//        }
+//        return user;
+//    }
 
 }

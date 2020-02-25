@@ -46,8 +46,8 @@
                             axios.post(url, this.bean).then(function (response) {
                                 console.log(response.data);
                                 var result = response.data;
-                                if (result.status == 200) {
-                                    // location.href = "admin";
+                                if (result.code == 0) {
+                                    location.href = "admin";
                                 } else {
                                     $("span.errorMessage").html(result.msg);
                                     $("div.loginErrorMessageDiv").css("visibility", "visible");
@@ -85,18 +85,24 @@
 
     <form name="loginForm" id="loginForm" method="post"  style="width:30%; margin:0 auto;">
         <div class="login_acount_text" style="color: white">管理员账户登录</div>
+        <div class="loginErrorMessageDiv" style="visibility: hidden">
+            <div class="alert alert-danger" >
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                <span class="errorMessage"></span>
+            </div>
+        </div>
         <div class="loginInput " style="background-color: white">
                         <span class="loginInputIcon " style="top: -1cm">
                             <span class=" glyphicon glyphicon-user"></span>
                         </span>
-            <input  id="mobile" name = "name"  placeholder="账号" type="text" />
+            <input  id="mobile" v-model = "bean.name"  placeholder="账号" type="text" />
         </div>
 
         <div class="loginInput " style="background-color: white">
                         <span class="loginInputIcon ">
                             <span class=" glyphicon glyphicon-lock"></span>
                         </span>
-            <input id="password" name = "password" type="password" placeholder="密码" />
+            <input id="password"  v-model = "bean.password" type="password" placeholder="密码" />
         </div>
         <div style="margin-top:20px">
             <button class="btn btn-block btn-primary blueButton" type="button" @click="login">登录</button>

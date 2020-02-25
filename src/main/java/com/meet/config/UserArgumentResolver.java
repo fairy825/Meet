@@ -44,12 +44,25 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
         HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
 
         String paramToken = request.getParameter(UserService.COOKI_NAME_TOKEN);
+        String userId = getCookieValue(request, UserService.USER_ID);
         String cookieToken = getCookieValue(request, UserService.COOKI_NAME_TOKEN);
-        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken))
-            return "login";
+        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)){
+            response.sendRedirect("login");
+            return null;
+        }
         String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-        return userService.getByToken(response, token);
-//		return UserContext.getUser();
+
+        String byToken = userService.getToken(response, Integer.valueOf(userId));
+        if(byToken==null) {//redistoken==null
+            response.sendRedirect("login");
+            return null;
+        }else if(byToken.equals(token)){
+            return userService.queryUserInfo(Integer.valueOf(userId));
+        }else{//账号被挤出
+            response.sendRedirect("login");
+            return null;
+        }
+
     }
 
 	private String getCookieValue(HttpServletRequest request, String cookiName) {

@@ -8,10 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface AdminService {
     public static final String COOKI_NAME_TOKEN = "token";
+    public static final String ADMIN_ID = "adminId";
 
+    public Admin queryAdminInfo(Integer adminId);
     public Admin queryUserForLogin(String username, String password);
     public Admin queryUsernameIsExist(String username);
-    public AdminVO addCookie(HttpServletResponse response, String token, Admin admin) ;
-    public Admin getByToken(HttpServletResponse response, String token);
+    public boolean addCookie(HttpServletResponse response, String token, Integer adminId) ;
+    public String getToken(HttpServletResponse response,Integer adminId);
 
 }

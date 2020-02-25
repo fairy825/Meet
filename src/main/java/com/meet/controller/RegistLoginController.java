@@ -9,18 +9,15 @@ import com.meet.result.CodeMsg;
 import com.meet.result.Result;
 import com.meet.service.AdminService;
 import com.meet.service.UserService;
-import com.meet.utils.MD5Util;
-import com.meet.utils.UUIDUtil;
-import com.meet.utils.ValidatorUtil;
+import com.meet.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -32,7 +29,9 @@ public class RegistLoginController extends BasicController{
 	UserService userService;
 	@Autowired
 	AdminService adminService;
-	
+	@Autowired
+	RedisOperator redis;
+
 	@PostMapping("/regist")
 	public Result<UserVO> regist(HttpServletResponse response, @RequestBody LoginVO loginVo){
 		String mobile = loginVo.getName();
@@ -59,8 +58,8 @@ public class RegistLoginController extends BasicController{
 			return Result.error(CodeMsg.MOBILE_EXIST);
 		}
 		String token = UUIDUtil.uuid();
-		UserVO userVO = userService.addCookie(response, token, user);
-		return Result.success(userVO);
+		userService.addCookie(response, token, user.getId());
+		return Result.success(null);
 	}
 //	public UsersVO setUserRedisSessionToken(Users userModel) {
 //		String uniqueToken = UUID.randomUUID().toString();
@@ -102,9 +101,9 @@ public class RegistLoginController extends BasicController{
 		}
 		//生成cookie
 		String token = UUIDUtil.uuid();
-		UserVO userVO = userService.addCookie(response, token, user);
+		userService.addCookie(response, token, user.getId());
 
-		return Result.success(userVO);
+		return Result.success(null);
 	}
 
 	@PostMapping("/loginAdmin")
@@ -123,8 +122,8 @@ public class RegistLoginController extends BasicController{
 			if (dbPass.equals(password)) {
 				//生成cookie
 				String token = UUIDUtil.uuid();
-				AdminVO adminVo = adminService.addCookie(response, token, admin);
-				return Result.success(adminVo);
+				adminService.addCookie(response, token, admin.getId());
+				return Result.success(null);
 			}else{
 			return Result.error(CodeMsg.PASSWORD_ERROR);
 			}
@@ -134,5 +133,35 @@ public class RegistLoginController extends BasicController{
 		}
 	}
 
-	
+	@GetMapping(value="/alogout")
+	public String adminLogout(HttpServletRequest request){
+		Cookie[] cookies = request.getCookies();
+		Integer adminId = 0;
+		for(Cookie cookie:cookies){
+			if(cookie.getName().equals(AdminService.ADMIN_ID)){
+				adminId = Integer.valueOf(cookie.getValue());
+				cookie.setMaxAge(0);
+			} else if(cookie.getName().equals(AdminService.COOKI_NAME_TOKEN)){
+				cookie.setMaxAge(0);
+			}
+		}
+		redis.del(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + adminId);
+		return "redirect:first";
+	}
+
+	@GetMapping("/logout")
+	public String logout(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		Integer userId = 0;
+		for(Cookie cookie:cookies){
+			if(cookie.getName().equals(UserService.USER_ID)){
+				userId = Integer.valueOf(cookie.getValue());
+				cookie.setMaxAge(0);
+			} else if(cookie.getName().equals(UserService.COOKI_NAME_TOKEN)){
+				cookie.setMaxAge(0);
+			}
+		}
+		redis.del(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId);
+		return "redirect:first";
+	}
 }

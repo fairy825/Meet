@@ -16,6 +16,8 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 	@Autowired
 	AdminArgumentResolver adminArgumentResolver;
 //	@Autowired
+//	AdminLoginInterceptor adminLoginInterceptor;
+//	@Autowired
 //	AccessInterceptor accessInterceptor;
 
 	@Override
@@ -26,7 +28,8 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
 //	@Override
 //	public void addInterceptors(InterceptorRegistry registry) {
-//		registry.addInterceptor(accessInterceptor);
+//		registry.addInterceptor(adminLoginInterceptor)
+//				.addPathPatterns("/**");
 //	}
 
 }

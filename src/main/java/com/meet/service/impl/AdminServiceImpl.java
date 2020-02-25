@@ -30,6 +30,16 @@ public class AdminServiceImpl implements AdminService {
     AdminMapper adminMapper;
     @Autowired
     private RedisOperator redis;
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public Admin queryAdminInfo(Integer adminId) {
+        Example adminExample = new Example(Admin.class);
+        Example.Criteria criteria = adminExample.createCriteria();
+        criteria.andEqualTo("id", adminId);
+        Admin result = adminMapper.selectOneByExample(adminExample);
+        return result;
+    }
     @Transactional(propagation= Propagation.SUPPORTS)
     @Override
     public Admin queryUserForLogin(String username, String password){
@@ -51,32 +61,37 @@ public class AdminServiceImpl implements AdminService {
         return result;
     }
     @Override
-    public AdminVO addCookie(HttpServletResponse response, String token, Admin admin) {
+    public boolean addCookie(HttpServletResponse response, String token, Integer adminId) {
         // 把token写到cookie当中 传给客户端
 //		redis.set(MIAOSHA_USER_REDIS_SESSION + ":" + token, user.getId().toString(), 3600*24*2);
-        redis.setBean(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + token, admin, 3600 * 24 * 2);
+        redis.setBean(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + adminId, token, 3600 * 24 * 2);
 //		redisService.set(MiaoshaUserKey.token, token, user);
         Cookie cookie = new Cookie(COOKI_NAME_TOKEN, token);
-        cookie.setMaxAge((int) redis.ttl(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + token));
+        Cookie cookie1 = new Cookie("adminId", String.valueOf(adminId));
+        cookie.setMaxAge((int) redis.ttl(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + adminId));
         cookie.setPath("/");
         response.addCookie(cookie);
+        cookie1.setMaxAge((int) redis.ttl(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + adminId));
+        cookie1.setPath("/");
+        response.addCookie(cookie1);
 
-        AdminVO adminVO = new AdminVO();
-        BeanUtils.copyProperties(admin, adminVO);
-        adminVO.setAdminToken(token);
-        return adminVO;
+//        AdminVO adminVO = new AdminVO();
+//        BeanUtils.copyProperties(admin, adminVO);
+//        adminVO.setAdminToken(token);
+        return true;
     }
     @Override
-    public Admin getByToken(HttpServletResponse response, String token) {
-        if (StringUtils.isEmpty(token)) {
-            return null;
-        }
+    public String getToken(HttpServletResponse response, Integer adminId) {
+//        if (StringUtils.isEmpty(adminId)) {
+//            return null;
+//        }
 //		MiaoshaUser user = getById(Long.parseLong(redis.get(MIAOSHA_USER_REDIS_SESSION + ":" + token)));
-        Admin admin = redis.get(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + token, Admin.class);
+//        Admin admin = redis.get(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + token, Admin.class);
+        String token = redis.get(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + adminId);
         // 延长有效期 有效期以最后一次登录的时间为准 所以每次操作都需要更新ttl
-        if (admin != null) {
-            addCookie(response, token, admin);
+        if (adminId != null&&token!=null) {
+            addCookie(response, token, adminId);
         }
-        return admin;
+        return token;
     }
 }

@@ -1,6 +1,8 @@
 package com.meet.controller;
 
 import com.meet.pojo.Admin;
+import com.meet.service.AdminService;
+import com.meet.utils.RedisConstant;
 import com.meet.utils.RedisOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -8,6 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -28,15 +33,9 @@ public class AdminPageController extends BasicController{
 		return "admin/adminLogin";
 	}
 
-	@GetMapping(value="/alogout")
-	public String adminLogout(HttpSession session){
-		Admin admin = (Admin)session.getAttribute("admin");
-		redis.del(ADMIN_REDIS_SESSION + ":" + admin.getId());
-		session.removeAttribute("admin");
-		return "redirect:first";
-	}
 	@GetMapping(value="/admin")
-	public String admin(){
+	public String admin(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "redirect:admin_category_list";
 	}
 
@@ -47,39 +46,47 @@ public class AdminPageController extends BasicController{
 	}
 
 	@GetMapping(value="/admin_category_edit")
-	public String editDistrict(){
+	public String editDistrict(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/editCategory";
 	}
 	@GetMapping(value="/admin_news_list")
-	public String listNews(){
+	public String listNews(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/listNews";
 	}
 	@GetMapping(value="/admin_comment_list")
-	public String listMessage(){
+	public String listMessage(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/listComment";
 	}
 
 	@GetMapping(value="/admin_book_list")
-	public String listVenue(){
+	public String listVenue(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/listBook";
 	}
 
 	@GetMapping(value="/admin_book_edit")
-	public String editVenue(){
+	public String editVenue(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/editBook";
 	}
 	@GetMapping(value="/admin_bookimage_list")
-	public String listVenueImage(){
+	public String listVenueImage(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/listBookImage";
 	}
 
 	@GetMapping(value="/admin_user_list")
-	public String listUser(){
+	public String listUser(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/listUser";
 	}
 
 	@GetMapping(value="/admin_appoint_list")
-	public String listBooking(){
+	public String listBooking(Admin admin, Model model){
+		model.addAttribute("admin",admin);
 		return "admin/listAppoint";
 	}
 }

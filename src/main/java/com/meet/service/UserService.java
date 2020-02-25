@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface UserService {
     public static final String COOKI_NAME_TOKEN = "token";
+    public static final String USER_ID = "userId";
 
     public User queryUsernameIsExist(String username);
 
@@ -19,9 +20,14 @@ public interface UserService {
     public void updateUserInfo(User user);
 
     public User queryUserInfo(Integer userId);
-    public UserVO addCookie(HttpServletResponse response, String token, User user);
-    public User getByToken(HttpServletResponse response, String token);
-    public PagedResult list( int start, int size);
+
+    //    public UserVO addCookie(HttpServletResponse response, String token, User user);
+//    public User getByToken(HttpServletResponse response, String token);
+    public String getToken(HttpServletResponse response, Integer userId);
+
+    public boolean addCookie(HttpServletResponse response, String token, Integer userId);
+
+    public PagedResult list(int start, int size);
+
     public PagedResult search(User user, int start, int size);
-        public void logout(String userId);
 }
