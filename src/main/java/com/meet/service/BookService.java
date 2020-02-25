@@ -1,6 +1,7 @@
 package com.meet.service;
 
 import com.meet.pojo.Book;
+import com.meet.pojo.bo.BookBO;
 import com.meet.pojo.vo.BookVO;
 import com.meet.utils.PagedResult;
 
@@ -17,7 +18,7 @@ public interface BookService {
     public void saveBook(Book book);
     public void delete(int id);
     public Book get(int id);
-    public void update(Book book);
+    public void update(BookBO bookBO);
     public boolean reduceStock(int id);
     public boolean addStock(int id);
 //    public Book findByName(String name);

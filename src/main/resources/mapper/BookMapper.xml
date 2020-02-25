@@ -78,7 +78,7 @@
   </select>
   <select id="search" resultMap="BaseResultMap">
 
-    select * from book b left join category_book cb on cb.book_id=b.id
+    select * from book b
     where
     rating >= #{minRating}
     and stock >= #{stock}
@@ -97,4 +97,10 @@
     order by updated_time desc
 
   </select>
+  <delete id="deleteCategory" >
+    delete from category_book where book_id = #{id}
+  </delete>
+  <insert id="updateCategory"  keyProperty="id"  useGeneratedKeys="true" parameterType="Integer">
+    insert into category_book ( book_id,category_id ) values (#{bid},#{cid})
+  </insert>
 </mapper>

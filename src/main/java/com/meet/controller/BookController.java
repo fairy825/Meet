@@ -2,6 +2,7 @@ package com.meet.controller;
 
 import com.meet.pojo.Book;
 import com.meet.pojo.Category;
+import com.meet.pojo.bo.BookBO;
 import com.meet.pojo.vo.BookVO;
 import com.meet.result.Result;
 import com.meet.service.BookService;
@@ -88,8 +89,8 @@ public class BookController extends BasicController {
     }
 
     @PutMapping("/book")
-    public Result update(@RequestBody Book book) {
-        bookService.update(book);
+    public Result update(@RequestBody BookBO bookBO) {
+        bookService.update(bookBO);
         return Result.success(null);
     }
 

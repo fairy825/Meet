@@ -18,4 +18,6 @@ public interface BookMapper extends MyMapper<Book> {
                                    @Param("stock")int stock, @Param("minRating")int minRating);
     public void reduceStock(@Param("id")Integer id);
     public void addStock(@Param("id")Integer id);
+    public void deleteCategory(@Param("id")Integer id);
+    public void updateCategory(@Param("bid")Integer bid, @Param("cid")Integer cid);
 }

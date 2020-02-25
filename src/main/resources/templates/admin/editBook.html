@@ -1,36 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:include="include/admin/adminHeader::html('编辑书籍')" ></head>
+<head th:include="include/admin/adminHeader::html('编辑书籍')"></head>
 <body>
-<div th:replace="include/admin/adminNavigator::html" ></div>
+<div th:replace="include/admin/adminNavigator::html"></div>
 <script>
-    $(function(){
+    $(function () {
         var data4Vue = {
             uri: 'book',
-            listURL:'admin_book_list',
-            bean: {},
+            listURL: 'admin_book_list',
+            bean: {categories:[]},
+            categories: [],
+            cs:[]
         };
 
         var vue = new Vue({
             el: '#workingArea',
             data: data4Vue,
-            mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+            mounted: function () { //mounted　表示这个 Vue 对象加载成功了
                 this.get();
             },
             methods: {
-                get:function(){
+                get: function () {
                     var id = getUrlParms("id");
                     var cid = getUrlParms("cid");
-                    if(cid!=null){
-                        this.listURL = 'admin_book_list?cid='+cid;
+                    if (cid != null) {
+                        this.listURL = 'admin_book_list?cid=' + cid;
                     }
-                    var url = this.uri+"/"+id;
-                    axios.get(url).then(function(response) {
+                    var url = this.uri + "/" + id;
+                    axios.get("category/all").then(function (response) {
+                        vue.cs = response.data.data;
+                    })
+                    console.log(this.cs);
+                    console.log(this.categories);
+
+                    axios.get(url).then(function (response) {
                         vue.bean = response.data.data;
                     })
                 },
-                update:function () {
+                update: function () {
+                    console.log(this.bean);
+                    this.bean.categories = this.categories;
+                    console.log(this.bean);
+
                     if (!checkEmpty(this.bean.title, "书名"))
                         return;
                     if (!checkEmpty(this.bean.isbn, "ISBN"))
@@ -43,7 +55,7 @@
                         return;
                     if (!checkInt(this.bean.stock, "库存"))
                         return;
-                    if(this.bean.stock>this.bean.totalNum) {
+                    if (this.bean.stock > this.bean.totalNum) {
                         alert("库存不能大于书籍总数");
                         return;
                     }
@@ -51,8 +63,8 @@
                         return;
                     // var url = this.uri+"/"+this.bean.id;
                     var url = this.uri;
-                    axios.put(url,this.bean).then(function(response){
-                        location.href=vue.listURL;
+                    axios.put(url, this.bean).then(function (response) {
+                        location.href = vue.listURL;
                     });
                 }
             }
@@ -73,15 +85,15 @@
             <table class="editTable">
                 <tr>
                     <td>ISBN</td>
-                    <td><input  v-model.trim="bean.isbn" type="text" class="form-control"></td>
+                    <td><input v-model.trim="bean.isbn" type="text" class="form-control"></td>
                 </tr>
                 <tr>
                     <td>书籍名称</td>
-                    <td><input  v-model.trim="bean.title" type="text" class="form-control"></td>
+                    <td><input v-model.trim="bean.title" type="text" class="form-control"></td>
                 </tr>
                 <tr>
                     <td>书籍简介</td>
-                    <td><input  v-model.trim="bean.description" type="text"
+                    <td><input v-model.trim="bean.description" type="text"
                                class="form-control"></td>
                 </tr>
                 <tr>
@@ -91,23 +103,29 @@
                 </tr>
                 <tr>
                     <td>出版社</td>
-                    <td><input  v-model.trim="bean.publishingHouse" type="text"
+                    <td><input v-model.trim="bean.publishingHouse" type="text"
                                class="form-control"></td>
                 </tr>
                 <tr>
                     <td>书籍数量</td>
-                    <td><input  v-model.trim="bean.totalNum" type="text"
+                    <td><input v-model.trim="bean.totalNum" type="text"
                                class="form-control"></td>
                 </tr>
                 <tr>
                     <td>库存</td>
-                    <td><input  v-model.trim="bean.stock" type="text"
+                    <td><input v-model.trim="bean.stock" type="text"
                                class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>分类</td>
+                    <td v-for="c in cs ">
+                        <input type="checkbox" v-model="categories" :value="c.id">{{c.name}}
+                    </td>
                 </tr>
 
                 <tr class="submitTR">
                     <td colspan="2" align="center">
-                        <input type="hidden" name="id"   v-model.trim="bean.id" >
+                        <input type="hidden" name="id" v-model.trim="bean.id">
                         <a href="#nowhere" class="btn btn-success" @click="update">提 交</a>
                     </td>
                 </tr>
@@ -116,7 +134,7 @@
     </div>
 </div>
 
-<div th:replace="include/admin/adminFooter::html" ></div>
+<div th:replace="include/admin/adminFooter::html"></div>
 </body>
 </html>
 

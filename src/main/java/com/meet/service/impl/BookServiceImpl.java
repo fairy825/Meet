@@ -10,10 +10,12 @@ import com.meet.mapper.BookMapper;
 import com.meet.mapper.BookMapperCustom;
 import com.meet.pojo.Book;
 import com.meet.pojo.Category;
+import com.meet.pojo.bo.BookBO;
 import com.meet.pojo.vo.BookVO;
 import com.meet.service.*;
 import com.meet.utils.PagedResult;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -131,6 +133,7 @@ public class BookServiceImpl implements BookService {
             list = bookMapper.searchByCid(cid, isbn, title, author, publishing_house, stock, minRating);
         setSaleAndReviewNumber(list);
         setCategory(list);
+        bookimageService.setFirstBookimages(list);
         if(sort!=null)
         switch (sort) {
             case "review":
@@ -205,7 +208,14 @@ public class BookServiceImpl implements BookService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public void update(Book book) {
+    public void update(BookBO bookBO) {
+        List<Integer> cs = bookBO.getCategories();
+        bookMapper.deleteCategory(bookBO.getId());
+        for(Integer c: cs){
+            bookMapper.updateCategory(bookBO.getId(),c);
+        }
+        Book book = new Book();
+        BeanUtils.copyProperties(bookBO,book);
         bookMapper.updateByPrimaryKeySelective(book);
     }
 
