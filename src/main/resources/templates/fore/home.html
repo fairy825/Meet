@@ -1,10 +1,60 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>hello</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-</head>
+<head th:include="include/fore/header::html('首页')" ></head>
+
 <body>
-<p th:text="'hello'+${user.nickname}" ></p>
+<div th:replace="include/fore/navigator::html" ></div>
+
+<div id="workingArea">
+
+    <script>
+        $(function(){
+
+            var data4Vue = {
+                beans: [],
+            };
+
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    this.list();
+                },
+                methods: {
+                    list:function(){
+                        var url =  "news?start=0&size=5";
+                        axios.get(url).then(function(response) {
+                            console.log(response.data);
+                            vue.pagination = response.data.data;
+                            vue.beans = response.data.data.rows;
+                        });
+                    },
+                }
+            });
+
+        });
+
+    </script>
+
+    <div class="container">
+        <div class="row header_news_panel">
+            <div class="col-sm-4 news-tabs">
+                <p class="news-tabs__title h2">最新新闻</p>
+                <ul class="news-tabs__nav nav nav-tabs shadow_text" role="tablist">
+
+                    <li v-for="bean in beans" role="presentation">
+                        <a href="#home" role="tab" data-toggle="tab">
+                            <span class="time">{{bean.timeDesc}}</span>
+                            {{bean.title}}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- END Nav tabs -->
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

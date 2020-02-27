@@ -1,5 +1,6 @@
 package com.meet.controller;
 
+import com.meet.pojo.Admin;
 import com.meet.pojo.Book;
 import com.meet.pojo.Category;
 import com.meet.pojo.bo.BookBO;
@@ -40,14 +41,15 @@ public class BookController extends BasicController {
     }
 
     @PostMapping("/book/search")
-    public Result<PagedResult> list( @RequestBody BookVO bookVO,
-            @RequestParam(value = "stock", defaultValue = "0") Integer stock,
-            @RequestParam(value = "minRating", defaultValue = "0") Integer minRating,
-            @RequestParam(value = "start", defaultValue = "1") Integer start,
-            Integer size) {
+    public Result<PagedResult> list(@RequestBody BookVO bookVO,
+                                    @RequestParam(value = "stock", defaultValue = "0") Integer stock,
+                                    @RequestParam(value = "minRating", defaultValue = "0") Integer minRating,
+                                    @RequestParam(value = "sort", defaultValue = "all") String sort,
+                                    @RequestParam(value = "start", defaultValue = "1") Integer start,
+                                    Integer size) {
         start = start < 1 ? 1 : start;
         if (size == null) size = PAGE_SIZE;
-        PagedResult pagedResult = bookService.search(null, bookVO, stock, minRating, null, start, size);
+        PagedResult pagedResult = bookService.search(null, bookVO, stock, minRating, sort, start, size);
         return Result.success(pagedResult);
     }
 
@@ -67,7 +69,7 @@ public class BookController extends BasicController {
     }
 
     @PostMapping("/book")
-    public Result<Book> add(@RequestBody Book book) {
+    public Result<Book> add(Admin admin, @RequestBody Book book) {
 //        venue.setDistrict(districtService.get(did));
         book.setUpdatedTime(new Date());
         bookService.saveBook(book);
@@ -75,7 +77,7 @@ public class BookController extends BasicController {
     }
 
     @DeleteMapping("/book/{id}")
-    public Result delete(@PathVariable("id") int id) {
+    public Result delete(Admin admin, @PathVariable("id") int id) {
         bookService.delete(id);
         return Result.success(null);
     }
@@ -89,7 +91,7 @@ public class BookController extends BasicController {
     }
 
     @PutMapping("/book")
-    public Result update(@RequestBody BookBO bookBO) {
+    public Result update(Admin admin, @RequestBody BookBO bookBO) {
         bookService.update(bookBO);
         return Result.success(null);
     }

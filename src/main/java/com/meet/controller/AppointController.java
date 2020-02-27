@@ -1,5 +1,6 @@
 package com.meet.controller;
 
+import com.meet.pojo.Admin;
 import com.meet.pojo.Appoint;
 import com.meet.pojo.User;
 import com.meet.pojo.vo.AppointVO;
@@ -9,6 +10,7 @@ import com.meet.service.AppointService;
 import com.meet.service.BookService;
 import com.meet.service.UserService;
 import com.meet.utils.PagedResult;
+import com.meet.utils.RedisConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -45,7 +47,11 @@ public class AppointController extends BasicController {
 
     @GetMapping("/{id}")
     public Result<Appoint> getOne(@PathVariable("id") Integer id) {
-        return Result.success(appointService.get(id));
+        Appoint appoint = appointService.get(id);
+        if(appoint==null)
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+
+        return Result.success(appoint);
     }
 
     @GetMapping("")
@@ -60,7 +66,7 @@ public class AppointController extends BasicController {
 
     // 参数appointvo的startDate-endDate代表要搜索的appoint的结束日期的范围
     @PostMapping("")
-    public Result<PagedResult> search(@RequestBody AppointVO appointVO, Integer date,
+    public Result<PagedResult> search(Admin admin, @RequestBody AppointVO appointVO, Integer date,
                                       @RequestParam(value = "start", defaultValue = "1") Integer start,
                                       Integer size) {
         start = start < 1 ? 1 : start;
@@ -94,23 +100,31 @@ public class AppointController extends BasicController {
         appointVO.setUserId(userId);
         start = start < 1 ? 1 : start;
         if (size == null) size = PAGE_SIZE;
-        PagedResult pagedResult = appointService.searchWithoutDelete(appointVO, start, size);
+        PagedResult pagedResult = appointService.search(appointVO, start, size);
         return Result.success(pagedResult);
     }
 
 
     @PutMapping("")
-    public Result<Appoint> update(@RequestBody Appoint appoint) {
+    public Result<Appoint> update(HttpServletRequest request,@RequestBody Appoint appoint) {
+        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(userId ==null)
+            return Result.error(CodeMsg.NOT_LOGIN);
         appointService.update(appoint);
         return Result.success(null);
     }
 
     @GetMapping("/makeOrder/{bid}")
-    public Result<Appoint> add(User user, @PathVariable("bid") Integer bid, int date, String remark) {
+    public Result<Appoint> add(HttpServletRequest request,
+                               @PathVariable("bid") Integer bid, int date, String remark) {
         /**
          * 修改
          */
-        Integer userId = user.getId();
+        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(userId ==null)
+            return Result.error(CodeMsg.NOT_LOGIN);
         if (appointService.queryOrderIsExist(userId, bid))
             return Result.error(CodeMsg.BOOK_HAS_ORDERED);
         if (!bookService.reduceStock(bid))
@@ -145,7 +159,7 @@ public class AppointController extends BasicController {
     }
 
     @PutMapping("/arrive/{id}")
-    public Result<Appoint> arrive(@PathVariable("id") int id) {
+    public Result<Appoint> arrive(Admin admin, @PathVariable("id") int id) {
         Appoint appoint = appointService.get(id);
         appoint.setState(AppointService.waitFinish);
         appoint.setArriveDate(new Date());
@@ -154,7 +168,7 @@ public class AppointController extends BasicController {
     }
 
     @PutMapping("/back/{id}")
-    public Result<Appoint> back(@PathVariable("id") int id) {
+    public Result<Appoint> back(Admin admin, @PathVariable("id") int id) {
         Appoint appoint = appointService.get(id);
         bookService.addStock(appoint.getBookId());
         appoint.setState(AppointService.waitReview);
@@ -164,7 +178,12 @@ public class AppointController extends BasicController {
     }
 
     @PutMapping("/cancel/{id}")
-    public Result<Appoint> cancel(@PathVariable("id") int id) {
+    public Result<Appoint> cancel(HttpServletRequest request,@PathVariable("id") int id) {
+        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(userId ==null)
+            return Result.error(CodeMsg.NOT_LOGIN);
+
         Appoint appoint = appointService.get(id);
         appoint.setState(AppointService.cancelled);
         appointService.update(appoint);
@@ -172,7 +191,7 @@ public class AppointController extends BasicController {
     }
 
     @PutMapping("/approve/{id}")
-    public Result<Appoint> approve(@PathVariable("id") int id) {
+    public Result<Appoint> approve(Admin admin, @PathVariable("id") int id) {
         Appoint appoint = appointService.get(id);
         Date today = new Date();
         if(appoint.getStartDate().after(today))
@@ -184,7 +203,7 @@ public class AppointController extends BasicController {
     }
 
     @PutMapping("/refuse/{id}")
-    public Result<Appoint> refuse(@PathVariable("id") int id) {
+    public Result<Appoint> refuse(Admin admin, @PathVariable("id") int id) {
         Appoint appoint = appointService.get(id);
         appoint.setState(AppointService.refused);
         appointService.update(appoint);

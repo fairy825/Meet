@@ -1,6 +1,7 @@
 package com.meet.controller;
 
 import com.meet.pojo.User;
+import com.meet.service.UserService;
 import com.meet.utils.RedisConstant;
 import com.meet.utils.RedisOperator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +10,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 @Controller
 public class ForePageController extends BasicController{
+	@Autowired
+	RedisOperator redis;
 
 	@GetMapping(value="/home")
 	public String home(User user, Model model){
@@ -68,6 +73,20 @@ public class ForePageController extends BasicController{
 		return "fore/review";
 	}
 
-
+	@GetMapping("/logout")
+	public String logout(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		Integer userId = 0;
+		for(Cookie cookie:cookies){
+			if(cookie.getName().equals(UserService.USER_ID)){
+				userId = Integer.valueOf(cookie.getValue());
+				cookie.setMaxAge(0);
+			} else if(cookie.getName().equals(UserService.COOKI_NAME_TOKEN)){
+				cookie.setMaxAge(0);
+			}
+		}
+		redis.del(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId);
+		return "redirect:first";
+	}
 }
 

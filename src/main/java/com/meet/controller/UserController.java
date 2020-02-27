@@ -19,6 +19,7 @@ import com.meet.service.UserService;
 import com.meet.utils.ImageUtil;
 import com.meet.utils.MD5Util;
 import com.meet.utils.PagedResult;
+import com.sun.tools.javac.jvm.Code;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.BeanUtils;
@@ -38,13 +39,13 @@ public class UserController extends BasicController{
 //	@ApiOperation(value="查询用户信息", notes="查询用户信息的接口")
 //	@ApiImplicitParam(name="userId", value="用户id", required=true,
 //	dataType="String", paramType="query")
-	@GetMapping("/profile/{userId}")
-	public Result<User> query(@PathVariable Integer userId) throws Exception {
-		User userInfo = userService.queryUserInfo(userId);
-//		UserVO userVO = new UserVO();
-//		BeanUtils.copyProperties(userInfo, userVO);
+	@GetMapping("/profile")
+	public Result<UserVO> query(User userInfo){
+//		User userInfo = userService.queryUserInfo(userId);
+		UserVO userVO = new UserVO();
+		BeanUtils.copyProperties(userInfo, userVO);
 	    
-		return Result.success(userInfo);
+		return Result.success(userVO);
 	}
 
 	@GetMapping("")
@@ -71,7 +72,7 @@ public class UserController extends BasicController{
 
 //	@ApiOperation(value="更新用户个人信息", notes="用户更新自己的个人信息的接口")
 	@PutMapping("/profile")
-	public Result update(@RequestBody User user) {
+	public Result update(User loginUser,@RequestBody User user) {
 //		User user1 = (User)session.getAttribute("user");
 //
 //		if(user1 == null)
@@ -82,30 +83,24 @@ public class UserController extends BasicController{
 
 	//    @ApiOperation(value="更新用户密码", notes="用户修改密码的接口")
 
-	/**
-	 * 修改：
-	 *  应该改成根据token获得user
-	 * @param user
-	 * @param newPassword
-	 * @return
-	 * @throws Exception
-	 */
 	@PutMapping("/password")
 	public Result changePassword(User user, @RequestBody LoginVO loginVO, @RequestParam(value = "newPassword")String newPassword) throws Exception {
-		String inputPassword = loginVO.getPassword();
-		User user1 = userService.queryUserInfo(user.getId());
-		if (StringUtils.isBlank(inputPassword)) {
+		String formPassword = loginVO.getPassword();
+//		User user1 = userService.queryUserInfo(user.getId());
+		if (StringUtils.isBlank(formPassword)) {
 			return Result.error(CodeMsg.ORIGIN_PASSWORD_EMPTY);
 		}
 		if (StringUtils.isBlank(newPassword)) {
 			return Result.error(CodeMsg.NEW_PASSWORD_EMPTY);
 		}
 //		userService.updatePassword(String token, Integer id, newPassword)
-		if(userService.queryUserForLogin(user1.getName(), MD5Util.inputPassToDbPass(inputPassword,user1.getSalt()))!=null) {
-			String newDbPass = MD5Util.inputPassToDbPass(newPassword,user1.getSalt());
-			user1.setPassword(newDbPass);
-			userService.updateUserInfo(user1);
-			return Result.success(user1);
+		if(userService.queryUserForLogin(user.getName(), MD5Util.formPassToDBPass(formPassword,user.getSalt()))!=null) {
+			String newDbPass = MD5Util.formPassToDBPass(newPassword,user.getSalt());
+			user.setPassword(newDbPass);
+			userService.updateUserInfo(user);
+			UserVO userVO = new UserVO();
+			BeanUtils.copyProperties(user, userVO);
+			return Result.success(userVO);
 		}else{
 			return Result.error(CodeMsg.PASSWORD_ERROR);
 		}
@@ -140,6 +135,6 @@ public class UserController extends BasicController{
 		File f_small = new File(imageFolder_small, fileName);
 		f_small.getParentFile().mkdirs();
 		ImageUtil.resizeImage(file, 56, 56, f_small);
-		return Result.success(pathDB);
+		return Result.success("img/"+pathDB);
 	}
 }

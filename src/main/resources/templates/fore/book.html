@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include/fore/header::html('借书')"></head>
+
+<body>
+<div th:replace="include/fore/navigator::html"></div>
+<div id="workingArea">
+    <script>
+        function GetDateStr(AddDayCount) {
+            var dd = new Date();
+            dd.setDate(dd.getDate() + AddDayCount);//获取AddDayCount天后的日期
+            var y = dd.getFullYear();
+            var m = dd.getMonth() + 1;//获取当前月份的日期
+            var d = dd.getDate();
+            return y + "-" + m + "-" + d;
+        }
+
+        var today = GetDateStr(0);
+        var tomorrow = GetDateStr(1);
+        var aftertomorrow = GetDateStr(2);
+        $(function () {
+            var id = getUrlParms("id");
+            var data4Vue = {
+                bean: {},
+                tss: [],
+                ts: {},
+                date: 0,
+                messages: [],
+                pagination: {},
+                booking: '',
+                tid: '',
+                remark: '',
+                msgFromMyModal: '',
+                user: {name: '', password: ''},
+                today: '',
+                tomorrow: '',
+                aftertomorrow: ''
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted: function () { //mounted　表示这个 Vue 对象加载成功了
+                    // linkDefaultActions();
+                    this.load();
+                    this.list(0);
+                    // this.getTimeSlot(this.date);
+                },
+                methods: {
+                    load: function () {
+                        this.today = today;
+                        this.tomorrow = tomorrow;
+                        this.aftertomorrow = aftertomorrow;
+                        var url = "book/" + id;
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            vue.bean = result.data;
+                            console.log(vue.bean);
+                            vue.$nextTick(function () {
+                                imgAndInfoPageRegisterListeners(vue);
+                                // dateListener(vue);
+                                // remarkListener(vue);
+                            })
+                        });
+                    },
+                    list: function (start) {
+                        var url2 = "book/" + id + "/comment?start=" + start + "&status=1";
+                        axios.get(url2).then(function (response) {
+                            console.log(response.data);
+
+                            vue.pagination = response.data.data;
+                            vue.messages = response.data.data.rows;
+                        });
+                    },
+                    buy: function () {
+                        var url = "appoint/makeOrder/" + id + "?remark=" + this.remark+"&date="+this.date;
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                layer.msg("预订成功！")
+                                // $("#myModal").modal('show');
+                            } else{
+                                layer.msg(result.msg);
+                                if(result.code==500105){
+                                    $("#loginModal").modal('show');
+                                }
+                            }
+
+                        });
+                    },
+                    jump: function (page) {
+                        jump(page, vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function (start) {
+                        jumpByNumber(start, vue);
+                    },
+                    login: function () {
+                        var inputPass = $("#password").val();
+                        if (0 == this.user.name.length) {
+                            $("span.errorMessage").html("请输入用户名");
+                            $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            return;
+                        }
+                        if (0 == inputPass.length) {
+                            $("span.errorMessage").html("请输入密码");
+                            $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            return;
+                        }
+                        var salt = g_passsword_salt;
+                        var str = ""+salt.charAt(0)+salt.charAt(2) + inputPass +salt.charAt(5) + salt.charAt(4);
+                        this.user.password = md5(str);
+                        var url = "login";
+
+                        axios.post(url, this.user).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                layer.msg("成功");
+                                location.href = "to_book?id=" + id;
+                            } else {
+                                $("span.errorMessage").html(result.msg);
+                                $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            }
+                        });
+                    }
+                }
+            });
+
+
+        });
+
+
+        function imgAndInfoPageRegisterListeners(vue) {
+            $("img.smallImage").mouseenter(function () {
+                var bigImageURL = $(this).attr("bigImageURL");
+                $("img.bigImg").attr("src", bigImageURL);
+            });
+        }
+
+    </script>
+
+    <div style="position: relative">
+        <div style="position: absolute;z-index:3;width: 100%;height: 100%">
+            <div align="center">
+                <form action="forebooks" method="get">
+                    <div class="searchDiv" style="position: relative">
+                        <div style="position: absolute;z-index: 1">
+                            <input type="text" name="keyword" placeholder="请输入书名"/>
+                        </div>
+                        <div style="position: absolute;z-index:2;right: 0px">
+                            <button type="submit" class="searchButton btn-primary">搜索</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="productPageDiv" style="margin-bottom: 0px">
+                <div class="imgAndInfo">
+                    <div class="imgInimgAndInfo">
+                        <img :src="'img/bookimage/'+bean.id+'/'+bean.firstBookImage.id+'.jpg'" class="bigImg">
+                        <div class="smallImageDiv">
+                            <img v-for="vi in bean.bookImages" :src="'img/bookimage_small/'+bean.id+'/'+vi.id+'.jpg'"
+                                 :bigImageURL="'img/bookimage/'+bean.id+'/'+vi.id+'.jpg'"
+                                 class="smallImage">
+                        </div>
+                        <div class="img4load hidden"></div>
+                    </div>
+                    <div class="infoInimgAndInfo">
+                        <div class="productTitle">
+                            {{bean.title}}
+                        </div>
+                        <div v-for="(c,index) in bean.categories">
+                            <span>{{c.name}}</span>
+                            <span v-if="index!=bean.categories.length-1"> / </span>
+                        </div>
+                        <div class="productSubTitle">
+                            {{bean.description}}
+                        </div>
+                        <div class="originalDiv">
+                            <span class="originalPriceDesc">ISBN</span>
+                            <span class="originalPrice">{{bean.isbn}}</span>
+                        </div>
+                        <div class="originalDiv">
+                            <span class="originalPriceDesc">作者</span>
+                            <span class="originalPrice">{{bean.author}}</span>
+                        </div>
+                        <div class="originalDiv">
+                            <span class="originalPriceDesc">出版社</span>
+                            <span class="originalPrice">{{bean.publishingHouse}}</span>
+                        </div>
+                        <div class="originalDiv">
+                            <span class="originalPriceDesc">评分</span>
+                            <span class="originalPrice">{{bean.rating}}</span>
+                        </div>
+                        <div class="originalDiv">
+                            <span class="originalPriceDesc">库存</span>
+                            <span class="originalPrice">{{bean.stock}}</span>
+                        </div>
+                        <div class="productSaleAndReviewNumber"
+                             style="padding: 0px;width: 300px;margin-top:30px;margin-left: -10px">
+                            <div style="color: #6C6C6C;width: 150px">借阅次数: <span class="redColor boldWord"> {{ bean.saleCount }}</span>
+                            </div>
+                            <div style="color: #6C6C6C;width: 100px">累计评价: <span class="redColor boldWord"> {{ bean.reviewCount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="clear:both"></div>
+                </div>
+
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-6"
+                             style="position: relative;margin-bottom: 1.8cm;width: 860px;margin-left: 120px;">
+                            <div class="block-title">
+                                <h2 class="block-title__h2">开始预约</h2>
+                            </div>
+                            <div class="thumbnail thumbnail_big">
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                        <div class="panel panel-default text-left no-boder">
+                                            <div class="panel-heading">
+                                                可预约列表
+                                            </div>
+                                            <div class="dropdown">
+                                                <select v-model="date">
+                                                    <option value="" disabled>请选择日期</option>
+                                                    <option value="0">{{today}}
+                                                    </option>
+                                                    <option value="1">{{tomorrow}}</option>
+                                                    <option value="2">{{aftertomorrow}}</option>
+                                                </select>
+                                                <input v-model="remark" placeholder="告诉管理员你的需求吧！" />
+                                            </div>
+
+                                            <button class="btn-primary" @click="buy">
+                                                预约
+                                            </button>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="productReviewDiv wrap_gray"
+                     style="margin-left: -120px;margin-top:0px;margin-bottom:0px;width: 1260px">
+                    <div class="productReviewTopPart" style="margin-left: 170px;width: 840px">
+                        <a href="#nowhere" class="selected">累计评价 <span class="productReviewTopReviewLinkNumber">{{bean.reviewCount}}</span>
+                        </a>
+                    </div>
+
+                    <div class="productReviewContentPart" style="margin-left: 170px;width: 840px">
+                        <div class="productReviewItem" v-for="message in messages">
+                            <div class="productReviewItemDesc">
+                                <div class="productReviewItemContent">
+                                    {{message.content }}
+                                </div>
+                                <div class="productReviewItemDate">
+                                    {{message.timeDesc}}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div style="margin-left: 500px">
+                        <div th:replace="include/admin/adminPage::html" style="margin-left: 200px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="remarkEnterModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p>备注</p>
+                    <input v-model.trim="remark" placeholder="告诉管理员你的需求吧！"/>
+                </div>
+                <div class="modal-footer">
+                    <button data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
+                    <button class="btn btn-primary" @click="buy(tid,remark)" type="button">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+    <div th:replace="include/fore/modal4login::html" ></div>
+
+</div>
+</body>
+</html>

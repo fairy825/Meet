@@ -3,10 +3,10 @@ package com.meet.pojo.vo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class UserVO {
-    
+
     private Integer id;
-	private String userToken;
-	
+    private String userToken;
+
     /**
      * 用户名
      */
@@ -17,7 +17,36 @@ public class UserVO {
      */
     private String nickname;
 
-   
+    private String phone;
+
+    private String email;
+
+    private String faceImage;
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFaceImage() {
+        return faceImage;
+    }
+
+    public void setFaceImage(String faceImage) {
+        this.faceImage = faceImage;
+    }
+
     /**
      * @return id
      */
@@ -50,7 +79,7 @@ public class UserVO {
         this.name = name;
     }
 
- 
+
     /**
      * 获取昵称
      *
@@ -70,13 +99,13 @@ public class UserVO {
     }
 
 
-	public String getUserToken() {
-		return userToken;
-	}
+    public String getUserToken() {
+        return userToken;
+    }
 
-	public void setUserToken(String userToken) {
-		this.userToken = userToken;
-	}
+    public void setUserToken(String userToken) {
+        this.userToken = userToken;
+    }
 
 
 }

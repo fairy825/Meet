@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.servlet.http.HttpServletResponse;
 
 public interface UserService {
-    public static final String COOKI_NAME_TOKEN = "token";
+    public static final String COOKI_NAME_TOKEN = "user-token";
     public static final String USER_ID = "userId";
 
     public User queryUsernameIsExist(String username);

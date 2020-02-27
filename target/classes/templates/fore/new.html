@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include/fore/header::html('所有新闻')" ></head>
+
+<body>
+<div th:replace="include/fore/navigator::html" ></div>
+<div id="workingArea">
+<script>
+
+    $(function(){
+        var data4Vue = {
+            uri:'news',
+            bean:{},
+            keyword:'',
+        };
+
+        //ViewModel
+        var vue = new Vue({
+            el: '#workingArea',
+            data: data4Vue,
+            mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                this.get();
+            },
+            methods: {
+                get:function(){
+                    var id = getUrlParms("id");
+                    console.log("id="+id);
+                    var url =  this.uri+"/"+id;
+                    axios.get(url).then(function(response) {
+                        console.log(response.data);
+                        vue.bean = response.data.data;
+                        // vue.keyword='';
+                    });
+                }
+            }
+        });
+    });
+</script>
+
+    <div class="wrapper" style="margin-right: auto;margin-left: auto">
+        <article class="container articles">
+                <div class="col-sm-12 article_text" style="margin-left: auto;margin-right: auto" >
+                    <div class="current">
+                        <h1 class="text-center yel_line current__title">{{bean.title}}</h1>
+                        <br>
+                        <h5 class="text-center yel_line">{{bean.createDate}}</h5>
+                        <br>
+                        <br>
+                        <p class="current__text">{{bean.content}}</p>
+                    </div>
+                </div>
+        </article>
+    </div>
+</div>
+</body>
+</html>

@@ -132,4 +132,5 @@ public class User {
     public void setFaceImage(String faceImage) {
         this.faceImage = faceImage;
     }
+
 }

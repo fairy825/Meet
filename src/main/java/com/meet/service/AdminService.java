@@ -7,7 +7,7 @@ import com.meet.pojo.vo.AdminVO;
 import javax.servlet.http.HttpServletResponse;
 
 public interface AdminService {
-    public static final String COOKI_NAME_TOKEN = "token";
+    public static final String COOKI_NAME_TOKEN = "admin-token";
     public static final String ADMIN_ID = "adminId";
 
     public Admin queryAdminInfo(Integer adminId);

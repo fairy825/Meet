@@ -11,6 +11,7 @@ public class CodeMsg {
 	public static CodeMsg BIND_ERROR = new CodeMsg(500101, "参数校验异常：%s");
 	public static CodeMsg REQUEST_ILLEGAL = new CodeMsg(500102, "请求非法");
 	public static CodeMsg ACCESS_LIMIT_REACHED= new CodeMsg(500104, "访问太频繁！");
+	public static CodeMsg NOT_LOGIN= new CodeMsg(500105, "登录信息过期，请重新登录");
 	//登录注册模块 5002XX
 	public static CodeMsg SESSION_ERROR = new CodeMsg(500210, "Session不存在或者已经失效");
 	public static CodeMsg PASSWORD_EMPTY = new CodeMsg(500211, "用户名或登录密码不能为空");
@@ -27,13 +28,15 @@ public class CodeMsg {
 	//订单模块 5004XX
 	public static CodeMsg ORDER_NOT_EXIST = new CodeMsg(500400, "订单不存在");
 	public static CodeMsg BOOK_HAS_ORDERED = new CodeMsg(500401, "已经预订过该书");
-	public static CodeMsg HAS_REVIEWED = new CodeMsg(500402, "评论已超期");
+	public static CodeMsg HAS_REVIEWED = new CodeMsg(500402, "已评价过该书");
+	public static CodeMsg CANNOT_REVIEWED = new CodeMsg(500403, "没有评价权限");
 
 	//秒杀模块 5005XX
 	public static CodeMsg MIAO_SHA_OVER = new CodeMsg(500500, "商品已经秒杀完毕");
 	public static CodeMsg REPEATE_MIAOSHA = new CodeMsg(500501, "不能重复秒杀");
-	public static CodeMsg MIAOSHA_FAIL = new CodeMsg(500502, "秒杀失败");
-	
+	public static CodeMsg MIAOSHA_FAIL = new CodeMsg(500502, "预订失败");
+	public static CodeMsg BOOK_EMPTY = new CodeMsg(500503, "库存不足");
+
 	
 	private CodeMsg( ) {
 	}

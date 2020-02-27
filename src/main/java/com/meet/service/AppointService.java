@@ -21,7 +21,7 @@ public interface AppointService {
 
     public PagedResult list(int start, int size);
     public PagedResult search(AppointVO appointVO, int start, int size);
-    public PagedResult searchWithoutDelete(AppointVO appointVO, int start, int size);
+//    public PagedResult searchWithoutDelete(AppointVO appointVO, int start, int size);
     public List<Appoint> findAllWithoutStatic();
     public Appoint get(int id);
     public void update(Appoint appoint);

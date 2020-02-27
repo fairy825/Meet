@@ -1,5 +1,6 @@
 package com.meet.controller;
 
+import com.meet.pojo.Admin;
 import com.meet.pojo.Category;
 import com.meet.result.Result;
 import com.meet.service.CategoryService;
@@ -32,13 +33,13 @@ public class CategoryController extends BasicController{
     }
 
     @PostMapping("")
-    public Result<Category> add(@RequestBody Category category){
+    public Result<Category> add(Admin admin, @RequestBody Category category){
         categoryService.saveCategory(category);
         return Result.success(category);
     }
 
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable("id") int id){
+    public Result delete(Admin admin, @PathVariable("id") int id){
         categoryService.delete(id);
         return Result.success(null);
     }
@@ -50,7 +51,7 @@ public class CategoryController extends BasicController{
     }
 
     @PutMapping("")
-    public Result update(@RequestBody  Category category) {
+    public Result update(Admin admin, @RequestBody  Category category) {
         categoryService.update(category);
         return Result.success(null);
     }

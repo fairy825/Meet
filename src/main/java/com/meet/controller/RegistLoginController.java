@@ -132,36 +132,4 @@ public class RegistLoginController extends BasicController{
 			return Result.error(CodeMsg.MOBILE_NOT_EXIST);
 		}
 	}
-
-	@GetMapping(value="/alogout")
-	public String adminLogout(HttpServletRequest request){
-		Cookie[] cookies = request.getCookies();
-		Integer adminId = 0;
-		for(Cookie cookie:cookies){
-			if(cookie.getName().equals(AdminService.ADMIN_ID)){
-				adminId = Integer.valueOf(cookie.getValue());
-				cookie.setMaxAge(0);
-			} else if(cookie.getName().equals(AdminService.COOKI_NAME_TOKEN)){
-				cookie.setMaxAge(0);
-			}
-		}
-		redis.del(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + adminId);
-		return "redirect:first";
-	}
-
-	@GetMapping("/logout")
-	public String logout(HttpServletRequest request) {
-		Cookie[] cookies = request.getCookies();
-		Integer userId = 0;
-		for(Cookie cookie:cookies){
-			if(cookie.getName().equals(UserService.USER_ID)){
-				userId = Integer.valueOf(cookie.getValue());
-				cookie.setMaxAge(0);
-			} else if(cookie.getName().equals(UserService.COOKI_NAME_TOKEN)){
-				cookie.setMaxAge(0);
-			}
-		}
-		redis.del(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId);
-		return "redirect:first";
-	}
 }

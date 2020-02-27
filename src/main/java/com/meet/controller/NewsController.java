@@ -1,5 +1,6 @@
 package com.meet.controller;
 
+import com.meet.pojo.Admin;
 import com.meet.pojo.News;
 import com.meet.result.Result;
 import com.meet.service.NewsService;
@@ -34,12 +35,12 @@ public class NewsController extends BasicController{
     }
 //    @ApiOperation(value="新增新闻", notes="管理员新增新闻的接口")
     @PostMapping("")
-    public Result add(@RequestBody News news) {
+    public Result add(Admin admin, @RequestBody News news) {
         newsService.saveNews(news);
         return Result.success(news);
     }
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable("id") int id) {
+    public Result delete(Admin admin, @PathVariable("id") int id) {
         newsService.delete(id);
         return Result.success(null);
     }

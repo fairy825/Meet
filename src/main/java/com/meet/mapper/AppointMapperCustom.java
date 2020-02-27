@@ -11,7 +11,9 @@ import java.util.List;
 
 public interface AppointMapperCustom extends MyMapper<AppointVO> {
     List<AppointVO> search(@Param("bookIsbn")String bookIsbn,@Param("bookName")String bookName,
-                           @Param("userName")String userName, @Param("state")String state);
+                           @Param("userId")Integer userId, @Param("userName")String userName,
+                           @Param("state")String state,
+                           @Param("startDate")String startDate,@Param("endDate")String endDate);
     List<AppointVO> searchWithoutDelete(@Param("bookName")String bookName, @Param("userId")Integer userId,
                            @Param("state")String state);
 }

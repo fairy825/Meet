@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include/fore/header::html('借书')"></head>
+<body>
+<div th:replace="include/fore/navigator::html"></div>
+
+<div id="workingArea">
+    <script>
+        $(function () {
+            var aid = getUrlParms("aid");
+            var bid = getUrlParms("bid");
+            var data4Vue = {
+                book: '',
+                showReviews: false,
+                pagination: {},
+                reviews: [],
+                bean: {},
+                user: {name: '', password: ''}
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted: function () { //mounted　表示这个 Vue 对象加载成功了
+                    // this.load();
+                    this.load();
+                    // this.list(0);
+                },
+                methods: {
+                    load: function () {
+                        console.log("aid: " + aid);
+                        if (aid == "null" || aid == "" || aid == null || aid == undefined
+                            || bid == "null" || bid == "" || bid == null || bid == undefined) {
+                            layer.msg("请求非法");
+                            setTimeout(function () {
+                                location.href = "bought";
+                            }, 1000);
+                            return;
+                        }
+                        var url = "appoint/" + aid;
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            if (result.code != 0) {
+                                layer.msg(result.msg);
+                                setTimeout(function () {
+                                    location.href = "bought";
+                                }, 1000);
+								return;
+							} else {
+                                var appoint = result.data;
+                                if (appoint.state != "waitReview") {
+                                    if (appoint.state != "finish")
+                                        layer.msg("没有评价权限");
+                                    else
+                                        layer.msg("已评价过该书");
+
+                                    setTimeout(function () {
+                                        location.href = "bought";
+                                    }, 1000);
+									return;
+								}
+                            }
+                        });
+                        url = "book/" + bid;
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                vue.book = response.data.data;
+                                console.log(response.data.data);
+                            } else {
+                                layer.msg(result.msg);
+                                setTimeout(function () {
+                                    location.href = "bought";
+                                }, 1000);
+                            }
+                        })
+                    },
+                    list: function (start) {
+                        var url = "book/" + bid + "/comment?status=1&start=" + start;
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            console.log(result);
+                            vue.pagination = response.data.data;
+                            vue.reviews = response.data.data.rows;
+                        });
+                    },
+                    jump: function (page) {
+                        jump(page, vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function (start) {
+                        jumpByNumber(start, vue);
+                    },
+                    doreview: function () {
+                        var url = "comment/" + bid + "?aid=" + aid;
+                        console.log(vue.bean);
+
+                        axios.post(url, this.bean).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                // var result = response.data;
+                                // console.log(result.data);
+                                // vue.msgFromMyModal = "评论成功！请等待管理员审核！"
+                                // $("#myModal").modal('show');
+                                layer.msg("评论成功！");
+                                setTimeout(function () {
+                                    // $("#myModal").modal('hide');
+                                    vue.showReviews = true;
+                                    vue.list(0);
+                                }, 1000);
+                            }
+                            // else if(res==501) {
+                            // 	$("#loginModal").modal('show');
+                            // }
+                            else {
+                                layer.msg(result.msg);
+                                if(result.code==500105){
+                                    $("#loginModal").modal('show');
+                                }else {
+
+                                    // vue.msgFromMyModal = response.data.msg;
+                                    // $("#myModal").modal('show');
+                                    setTimeout(function () {
+                                        // $("#myModal").modal('hide');
+                                        location.href = "bought";
+                                    }, 2000);
+                                }
+                            }
+                        });
+                    },
+                    login: function () {
+                        var inputPass = $("#password").val();
+                        if (0 == this.user.name.length) {
+                            $("span.errorMessage").html("请输入用户名");
+                            $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            return;
+                        }
+                        if (0 == inputPass.length) {
+                            $("span.errorMessage").html("请输入密码");
+                            $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            return;
+                        }
+                        var salt = g_passsword_salt;
+                        var str = ""+salt.charAt(0)+salt.charAt(2) + inputPass +salt.charAt(5) + salt.charAt(4);
+                        this.user.password = md5(str);
+                        var url = "login";
+
+                        axios.post(url, this.user).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                layer.msg("成功");
+                                location.href = "review?aid=" + aid + "&bid=" + bid;
+                            } else {
+                                $("span.errorMessage").html(result.msg);
+                                $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            }
+                        });
+                    }
+
+                }
+            });
+        })
+    </script>
+
+    <div style="position: relative">
+        <div style="position: absolute;z-index:3;width: 100%;height: 100%">
+            <div style="position: relative">
+
+                <div class="reviewDiv">
+                    <div class="reviewProductInfoDiv">
+                        <div class="reviewProductInfoImg"><img v-if="null!=book.firstBookImage" width="400px"
+                                                               height="400px"
+                                                               :src="'img/bookimage/'+book.id+'/'+book.firstBookImage.id+'.jpg'">
+                        </div>
+                        <div class="reviewProductInfoRightDiv">
+                            <div class="reviewProductInfoRightText" style="font-size: medium">
+                                {{book.title}}
+                            </div>
+                            <div class="reviewProductInfoRightText" style="font-size: medium">
+                                {{book.author}}
+                            </div>
+
+                        </div>
+                        <div style="clear:both"></div>
+                    </div>
+
+                    <div class="reviewStasticsDiv">
+                        <div class="reviewStasticsLeft">
+                            <div class="reviewStasticsLeftTop"></div>
+                            <div class="reviewStasticsLeftContent">累计评价 <span class="reviewStasticsNumber"> {{book.reviewCount}}</span>
+                            </div>
+                            <div class="reviewStasticsLeftFoot"></div>
+                        </div>
+                        <div class="reviewStasticsRight">
+                            <div class="reviewStasticsRightEmpty"></div>
+                            <div class="reviewStasticsFoot"></div>
+                        </div>
+                    </div>
+
+                    <div v-show="showReviews" class="reviewDivlistReviews" style="margin-left: 170px;width: 840px">
+                        <div v-for="r in reviews" class="reviewDivlistReviewsEach">
+                            <div class="reviewDate">{{r.timeDesc}}</div>
+                            <div class="reviewContent">{{r.content}}</div>
+                            <div class="reviewUserInfo pull-right">{{r.userName}}</div>
+                        </div>
+                        <div th:replace="include/admin/adminPage::html"></div>
+                    </div>
+
+                    <div v-show="!showReviews" class="makeReviewDiv">
+                        <table class="makeReviewTable">
+                            <tr>
+                                <td>打分</td>
+                                <td><input name="rating" v-model.trim="bean.rating"/></td>
+
+                                <td class="makeReviewTableFirstTD"
+                                    style="font-size: 14px;color: #363535;	font-weight: bold;">评价
+                                </td>
+                                <td><textarea name="content" v-model.trim="bean.content"
+                                              placeholder="请输入留言内容"></textarea></td>
+                            </tr>
+                            <tr class="submitTR">
+                                <td colspan="2" align="center">
+                                    <a href="#nowhere" @click="doreview" class="btn btn-success">提交</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    			<div th:replace="include/fore/modal4login::html" ></div>
+
+</div>
+</body>
+</html>

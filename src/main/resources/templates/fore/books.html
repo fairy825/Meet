@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include/fore/header::html('借书')"></head>
+<body>
+<div th:replace="include/fore/navigator::html"></div>
+<div id="workingArea">
+
+    <script>
+        $(function () {
+            var sort = getUrlParms("sort");
+            var keyword = getUrlParms("keyword");
+
+            var data4Vue = {
+                uri: 'book',
+                beans: [],
+                // bean:{},
+                searchbean: {},
+                categories: [],
+                minRating: '',
+                stock: '',
+                cid: 0,
+                sort: '',
+                pagination: {}
+            };
+
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted: function () { //mounted　表示这个 Vue 对象加载成功了
+                    this.get();
+                    this.list(0);
+                },
+                methods: {
+                    get: function () {
+                        this.sort = sort;
+                        var url = "category/all";
+                        axios.get(url).then(function (response) {
+                            vue.categories = response.data.data;
+                            console.log(vue.categories);
+                        });
+                    },
+                    list: function (start) {
+                        console.log(this.searchbean);
+                        console.log(this.minRating);
+                        console.log(this.stock);
+                        console.log("cid: " + cid);
+                        console.log("sort: " + sort);
+                        console.log("keyword: " + keyword);
+                        var url = "";
+                        var cid = this.cid;
+                        if (keyword != null && keyword != undefined
+                            && keyword != "null" && keyword != "") {
+                            this.searchbean.title = keyword;
+                        }
+                        if (cid == null || cid == 0)
+                            url = this.uri + "/search?start=" + start + "&sort=" + sort
+                                + "&minRating=" + this.minRating + "&stock=" + this.stock;
+                        else
+                            url = "category/" + cid + "/" + this.uri + "/search?start=" + start
+                                + "&sort=" + sort
+                                + "&minRating=" + this.minRating + "&stock=" + this.stock;
+
+
+                        axios.post(url, this.searchbean).then(function (response) {
+                            console.log(response.data);
+                            vue.pagination = response.data.data;
+                            vue.beans = response.data.data.rows;
+                            console.log(vue.beans);
+                        });
+                    },
+                    jump: function (page) {
+                        jump(page, vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function (start) {
+                        jumpByNumber(start, vue);
+                    }
+                }
+            });
+        });
+
+    </script>
+
+    <div style="position: relative">
+        <div style="position: absolute;z-index:3;width: 100%;height: 100%">
+            <div style="position: relative">
+                <div align="right" style="position: relative;margin-left: 35%">
+                    <div class="searchDiv" style="position: relative; width: 400px">
+                        <input type="text" @keyup.enter="list(0)" v-model.trim="searchbean.isbn" placeholder="请输入ISBN"/>
+                        <input type="text" @keyup.enter="list(0)" v-model.trim="searchbean.title" placeholder="请输入书名"/>
+                        <input type="text" @keyup.enter="list(0)" v-model.trim="searchbean.author" placeholder="请输入作者"/>
+                        <input type="text" @keyup.enter="list(0)" v-model.trim="searchbean.publishingHouse"
+                               placeholder="请输入出版社"/>
+                        <div style="position: absolute;z-index:2;right: 0px">
+                            <button @click="list(0)" class="searchButton btn-primary">搜索</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div align="left" style="position: absolute;top: 0px;left: 100px;z-index: 2">
+                    <table class="categorySortBarTable categorySortTable" style="size: A3;background-color: white">
+                        <tr style="border-radius: 4px">
+                            <td :class="{'grayColumn':(sort==null||sort=='all')}"><a href="?sort=all">综合<span
+                                    class="glyphicon glyphicon-arrow-down"></span></a></td>
+                            <td :class="{'grayColumn':(sort=='review')}"><a href="?sort=review">人气<span
+                                    class="glyphicon glyphicon-arrow-down"></span></a></td>
+                            <td :class="{'grayColumn':(sort=='saleCount')}"><a href="?sort=saleCount">借阅量<span
+                                    class="glyphicon glyphicon-arrow-down"></span></a></td>
+                            <td :class="{'grayColumn':(sort=='date')}"><a href="?sort=date">最新<span
+                                    class="glyphicon glyphicon-resize-vertical"></span></a></td>
+
+                            <div>
+                                <table class="categorySortBarTable categorySortTable"
+                                       style="size: A3;background-color: white">
+                                    <tr style="border-radius: 4px">
+                                        <td><input class="sortBarPrice" v-model.trim="minRating" type="text"
+                                                   placeholder="最低评分"></td>
+                                        <td><input class="sortBarPrice" v-model.trim="stock" type="text"
+                                                   placeholder="最低库存"></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <td>类别：
+                                <div class="dropdown">
+                                    <select v-model="cid">
+                                        <option value="0">全部</option>
+                                        <option v-for="category in categories" :value="category.id">
+                                            {{category.name}}
+                                        </option>
+                                    </select>
+                                </div>
+                            </td>
+
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="wrapper" style="position:relative; margin-top: 60px;margin-left: 13%">
+                    <div v-for="bean in beans ">
+                        <div class="productUnit" style="margin-right: 20px ">
+                            <div class="productUnitFrame">
+                                <a :href="'to_book?id='+bean.id">
+                                    <div class="special">
+                                        <img :src="'img/bookimage/'+bean.id+'/'+bean.firstBookImage.id+'.jpg'"
+                                             height="311" width="400" alt="image">
+                                        <div class="special__box">
+                                            <h5 class="special__category yel_line">
+                                                {{bean.title}}
+                                            </h5>
+                                            <a class="special__link" style="color: black;margin-top: 20px">{{bean.author}}</a>
+                                            <div v-for="(c,index) in bean.categories">
+                                                <span>{{c.name}}</span>
+                                                <span v-if="index!=bean.categories.length-1"> / </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="show1 productInfo" style="margin-right: 10px">
+                                        <span class="productReview">评价<span class="productReviewNumber">{{bean.reviewCount}}</span></span>
+                                        <span class="productReview">借阅次数<span class="productReviewNumber">{{bean.saleCount}}</span></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:replace="include/admin/adminPage::html"></div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -89,4 +89,21 @@ public class AdminPageController extends BasicController{
 		model.addAttribute("admin",admin);
 		return "admin/listAppoint";
 	}
+
+	@GetMapping(value="/alogout")
+	public String adminLogout(HttpServletRequest request){
+		Cookie[] cookies = request.getCookies();
+		Integer adminId = 0;
+		for(Cookie cookie:cookies){
+			if(cookie.getName().equals(AdminService.ADMIN_ID)){
+				adminId = Integer.valueOf(cookie.getValue());
+				cookie.setMaxAge(0);
+			} else if(cookie.getName().equals(AdminService.COOKI_NAME_TOKEN)){
+				cookie.setMaxAge(0);
+			}
+		}
+		redis.del(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + adminId);
+		return "redirect:first";
+	}
+
 }

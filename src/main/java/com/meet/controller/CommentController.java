@@ -1,5 +1,6 @@
 package com.meet.controller;
 
+import com.meet.pojo.Admin;
 import com.meet.pojo.Appoint;
 import com.meet.pojo.Comment;
 import com.meet.pojo.User;
@@ -8,10 +9,13 @@ import com.meet.result.Result;
 import com.meet.service.AppointService;
 import com.meet.service.BookService;
 import com.meet.service.CommentService;
+import com.meet.service.UserService;
 import com.meet.utils.PagedResult;
+import com.meet.utils.RedisConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
 
@@ -25,8 +29,8 @@ public class CommentController extends BasicController {
     AppointService appointService;
     @Autowired
     BookService bookService;
-    //    @Autowired
-//    UserService userService;
+    @Autowired
+    UserService userService;
 //    @Autowired
 //    VenueService venueService;
 //    @Autowired
@@ -44,8 +48,19 @@ public class CommentController extends BasicController {
 
 
     @GetMapping("/comment/mine")
-    public Result<Comment> myreview(@RequestParam(value = "aid") Integer aid){
+    public Result<Comment> myreview(HttpServletRequest request,@RequestParam(value = "aid") Integer aid){
+        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(userId ==null)
+            return Result.error(CodeMsg.NOT_LOGIN);
+
         Comment comment = commentService.queryByAppoint(aid);
+        Appoint appoint = appointService.get(aid);
+
+        if(comment!=null&&!appoint.getState().equals(AppointService.finish)){
+            appoint.setState(AppointService.finish);
+            appointService.update(appoint);
+        }
         return Result.success(comment);
     }
 
@@ -64,15 +79,24 @@ public class CommentController extends BasicController {
 //            @ApiImplicitParam(name = "bid", value = "订单id", required = true, dataType = "Integer")
 //    })
     @PostMapping("/comment/{bid}")
-    public Result add(User user, @RequestBody Comment comment, @PathVariable("bid") int bid,
+    public Result add(HttpServletRequest request, @RequestBody Comment comment, @PathVariable("bid") int bid,
                       @RequestParam(value = "aid") int aid){
+        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(userId ==null)
+            return Result.error(CodeMsg.NOT_LOGIN);
+
+
         Appoint appoint = appointService.get(aid);
 
-        if (!appoint.getState().equalsIgnoreCase(appointService.waitReview))
+        if (appoint.getState().equalsIgnoreCase(appointService.finish))
             return Result.error(CodeMsg.HAS_REVIEWED);
+        if (!appoint.getState().equalsIgnoreCase(appointService.waitReview))
+            return Result.error(CodeMsg.CANNOT_REVIEWED);
+
         bookService.addRating(bid,comment.getRating());
 
-        comment.setUserId(user.getId());
+        comment.setUserId(userId);
         comment.setBookId(bid);
         comment.setState(commentService.pass);
         comment.setCreateDate(new Date());
@@ -84,7 +108,12 @@ public class CommentController extends BasicController {
     }
 
     @DeleteMapping("/comment/{id}")
-    public Result suspend(@PathVariable("id") int id) {
+    public Result suspend(HttpServletRequest request, @PathVariable("id") int id) {
+        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+                userService.USER_ID, RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(userId ==null)
+            return Result.error(CodeMsg.NOT_LOGIN);
+
         Integer appointId = commentService.get(id).getAppointId();
         Appoint appoint = appointService.get(appointId);
         appoint.setState(AppointService.waitReview);
@@ -99,7 +128,7 @@ public class CommentController extends BasicController {
     }
 
     @PutMapping("/comment/agree/{id}")
-    public Result<Comment> agree(@PathVariable("id") int id) {
+    public Result<Comment> agree(Admin admin, @PathVariable("id") int id) {
 
         Comment comment = commentService.get(id);
         comment.setState(commentService.pass);
@@ -110,7 +139,7 @@ public class CommentController extends BasicController {
     }
 
     @PutMapping("/comment/refuse/{id}")
-    public Result<Comment> refuse(@PathVariable("id") int id) {
+    public Result<Comment> refuse(Admin admin, @PathVariable("id") int id) {
 
         Comment comment = commentService.get(id);
         comment.setState(commentService.refused);

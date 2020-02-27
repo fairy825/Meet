@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include/fore/header::html('我的订单')"></head>
+<body>
+<div th:replace="include/fore/navigator::html"></div>
+<div id="workingArea">
+    <script>
+        $(function () {
+            var data4Vue = {
+                uri: 'appoint/mine',
+                beans: [],
+                bean: {},
+                searchbean: {},
+                pagination: '',
+                myreview: {},
+                msg: '',
+                msgFromMyModal: '操作成功！',
+                user: {name: '', password: ''}
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted: function () { //mounted　表示这个 Vue 对象加载成功了
+                    this.list(0);
+                },
+                methods: {
+                    list: function (start) {
+                        var url = this.uri + "?start=" + start;
+                        console.log(this.searchbean);
+                        axios.post(url, this.searchbean).then(function (response) {
+                            console.log(response.data.data);
+                            vue.pagination = response.data.data;
+                            vue.beans = response.data.data.rows;
+                            vue.$nextTick(function () {
+                                // linkDefaultActions();
+                                orderPageRegisterListeners(this);
+                            })
+                        });
+                    },
+                    showMyReview: function (id) {
+                        vue.myreview = "";
+                        var url = "comment/mine?aid=" + id;
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                vue.myreview = response.data.data;
+
+                                for(var i=0;i<vue.beans.length;i++){
+                                    var curIndex = vue.beans[i].id;
+                                    if(curIndex!=id){
+                                        $("#myReview" + curIndex).hide();
+                                    }
+                                }
+                                $("#myReview" + id).toggle();
+                            } else {
+                                layer.msg(result.msg);
+                                if(result.code==500105){
+                                    $("#loginModal").modal('show');
+                                }
+
+                                // $("#loginModal").modal('show');
+                            }
+                        })
+                    },
+                    changeRemark: function (bid) {
+                        $("#remarkTR" + bid).toggle();
+                    },
+                    update: function (bean) {
+                        console.log(bean);
+                        var url = "appoint";
+                        var id = bean.id;
+                        $("#rmid" + id).css("border", "2px solid yellow");
+                        axios.put(url, bean).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                $("#rmid" + id).css("border", "2px solid green");
+								layer.msg("修改成功！");
+								// vue.msgFromMyModal = "修改成功！";
+                                // $("#myModal").modal('show');
+                            } else{
+								layer.msg(result.msg);
+                                if(result.code==500105){
+                                    $("#loginModal").modal('show');
+                                }
+								// $("#loginModal").modal('show');
+                            }
+                        });
+                    },
+                    review: function (bid, aid) {
+                        location.href = "review?aid=" + aid + "&bid=" + bid;
+                        //
+                        // var url = "comment/mine?aid=" + aid;
+                        // axios.get(url).then(function (response) {
+                        //     console.log(response.data.data);
+                        //     res = response.data.data;
+                        //     var result = response.data;
+                        //     if (result.code == 0) {
+                        //         if (res == null)
+                        //         // layer.msg("ok");
+                        //             location.href = "review?aid=" + aid + "&bid=" + bid;
+                        //         else {
+                        //             layer.msg("您已评价过该订单");
+                        //             // $("#myModal").modal('show');
+                        //             setTimeout(function () {
+                        //                 location.href = "bought";
+                        //             }, 2000);
+                        //         }
+                        //     } else {
+                        //         layer.msg(result.msg);
+                        //         // $("#loginModal").modal('show');
+                        //     }
+                        //
+                        // })
+                    },
+                    login: function () {
+                        var inputPass = $("#password").val();
+                        if (0 == this.user.name.length) {
+                            $("span.errorMessage").html("请输入用户名");
+                            $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            return;
+                        }
+                        if (0 == inputPass.length) {
+                            $("span.errorMessage").html("请输入密码");
+                            $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            return;
+                        }
+                        var salt = g_passsword_salt;
+                        var str = ""+salt.charAt(0)+salt.charAt(2) + inputPass +salt.charAt(5) + salt.charAt(4);
+                        this.user.password = md5(str);
+                        var url = "login";
+
+                        axios.post(url, this.user).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                layer.msg("成功");
+                                location.href = "bought";
+                            } else {
+                                $("span.errorMessage").html(result.msg);
+                                $("div.loginErrorMessageDiv").css("visibility", "visible");
+                            }
+                        });
+                    },
+                    jump: function (page) {
+                        jump(page, vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function (start) {
+                        jumpByNumber(start, vue);
+                    }
+                }
+            });
+        });
+
+        function orderPageRegisterListeners(vue) {
+            $("#cancelLink").click(function () {
+                console.log("click");
+                if (confirm("确认取消该订单？")) {
+                    console.log("afterconfirm");
+
+                    var aid = $(this).attr("aid");
+                    var url = "appoint/cancel/" + aid;
+                    axios.put(url).then(function (response) {
+                        var result = response.data;
+                        console.log(result);
+                        if (result.code == 0) {
+                            layer.msg("成功取消订单！");
+                            setTimeout(function () {
+                                vue.list(vue.pagination.number);
+                            }, 1000);
+                            // $("#myModal").modal('show');
+                        } else {
+                            layer.msg(result.msg);
+                            if(result.code==500105){
+                                $("#loginModal").modal('show');
+                            }
+                            // $("#loginModal").modal('show');
+                        }
+                    })
+                }
+            });
+
+            $("a.deleteReviewLink").click(function () {
+                console.log("click");
+                if (confirm("确认删除该评论？")) {
+                    var aid = $(this).attr("aid");
+                    var mid = $(this).attr("mid");
+                    var url = "comment/" + mid;
+                    axios.delete(url).then(function (response) {
+                        var result = response.data;
+                        if (result.code == 0) {
+                            $("#myReview" + aid).hide();
+                            layer.msg("成功删除评论！");
+                            setTimeout(function () {
+                                vue.list(vue.pagination.number);
+                            }, 1000);
+                        } else {
+                            layer.msg(result.msg);
+                            if(result.code==500105){
+                                $("#loginModal").modal('show');
+                            }
+                            // $("#loginModal").modal('show');
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+    <style>
+        #register_div {
+            /* 居中*/
+            float: left;
+            /*position: absolute;
+            left: 50%; top: 100%;
+            width: 500px; height: 330px;
+            /* 透明遮罩层 */
+            height: 120%;
+            background: rgba(255, 255, 255, 0.6)
+        }
+
+        #left {
+            line-height: 30px;
+
+            height: 500px;
+            width: 300px;
+            float: left;
+            padding: 5px;
+            font-size: 20px;
+        }
+
+        #section {
+            position: relative;
+            width: 600px;
+            float: left;
+            padding: 10px;
+            margin-left: 2cm;
+        }
+
+        #bottom {
+            position: relative;
+
+            float: bottom;
+            padding: 10px;
+            margin-left: -11cm;
+            margin-right: 4cm;
+            margin-top: -2cm;
+            margin-bottom: 8cm;
+
+        }
+
+        #right {
+            /*width:500px;
+            float:right;
+            float: top;
+            padding:0px;*/
+            position: relative;
+            line-height: 30px;
+            height: 500px;
+            width: 300px;
+            float: left;
+            padding: 0px;
+            font-size: 5px;
+
+        }
+
+        #content {
+            width: 800px;
+            /* float: right; */
+            padding: 15px;
+            position: relative;
+            /*margin-bottom: 11cm;*/
+            /* margin-right: 4cm; */
+            margin-left: 250px;
+        }
+
+        #footer {
+            background-color: cornflowerblue;
+            color: white;
+            clear: both;
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
+    <div style="position: relative">
+        <div style="position: absolute;z-index:3;width: 100%;height: 100%">
+            <div align="center" style="position: relative">
+                <div class="dropdown"
+                     style="margin: 50px auto;width:30%;z-index: 2;position: relative;display:inline-block">
+                    <select v-model="searchbean.state" style="height: 40px;font-size:medium;border-radius: 4px;">
+                        <option value="">请选择状态</option>
+                        <option value="refused">已驳回</option>
+                        <option value="waitTime">未到取书时间</option>
+                        <option value="waitArrive">待取书</option>
+                        <option value="waitFinish">进行中</option>
+                        <option value="waitReview">可留言</option>
+                        <option value="finish">已结束</option>
+                        <option value="cancelled">已取消</option>
+                    </select>
+                </div>
+
+
+                <div class="searchDiv"
+                     style="width:70%;position: relative; width: 400px;display:inline-block;top: 66px;">
+                    <div style="position: absolute;z-index: 2">
+                        <input type="text" @keyup.enter="list(0)" v-model.trim="searchbean.bookName"
+                               placeholder="请输入书名"/>
+                        <input type="text" @keyup.enter="list(0)" v-model.trim="searchbean.bookIsbn"
+                               style="width: 160px"
+                               placeholder="请输入ISBN"/>
+                    </div>
+                    <div style="position: absolute;z-index:2;right: 0px">
+                        <button @click="list(0)" class="searchButton btn-primary">搜索</button>
+                    </div>
+                </div>
+
+            </div>
+            <br>
+
+            <div id="content" align="center">
+                <div class="row" style="margin-left: 100px;width: 80%">
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <div class="panel panel-default text-left no-boder">
+                            <div class="panel-heading">
+                                订单列表
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-hover"
+                                           id="dataTables-categoris">
+                                        <thead>
+                                        <tr>
+                                            <th>ISBN</th>
+                                            <th>书名</th>
+                                            <th>创建时间</th>
+                                            <th>取书时间</th>
+                                            <th>借书起始时间</th>
+                                            <th>借书终止时间</th>
+                                            <th>归还时间</th>
+                                            <th>订单状态</th>
+                                            <th>订单备注</th>
+                                            <th>操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="tbody-categoris" v-for="bean in beans ">
+                                        <tr>
+                                            <td>
+                                                <a :href="'to_book?id='+bean.bookId">{{bean.bookIsbn}}</a>
+                                            </td>
+                                            <td>
+                                                <a :href="'to_book?id='+bean.bookId">{{bean.bookName}}</a>
+                                            </td>
+                                            <td>
+                                                {{bean.createDate}}
+                                            </td>
+                                            <td>
+                                                {{bean.arriveDate}}
+                                            </td>
+                                            <td>
+                                                {{bean.startDate}}
+                                            </td>
+                                            <td>
+                                                {{bean.endDate}}
+                                            </td>
+                                            <td>
+                                                {{bean.backDate}}
+                                            </td>
+                                            <td>
+                                                {{bean.stateDesc}}
+                                            </td>
+											<td>
+											<button v-if="bean.state=='waitTime'||bean.state=='waitArrive'"
+													@click="changeRemark(bean.id)" class="btn btn-primary">修改
+											</button>
+												<button v-else
+														@click="changeRemark(bean.id)" class="btn btn-primary">查看
+												</button>
+											</td>
+                                            <td valign="top" class="orderListItemButtonTD orderItemOrderInfoPartTD"
+                                                width="100px">
+
+                                                <button v-if="bean.state=='waitReview'"
+                                                        @click="review(bean.bookId,bean.id)"
+                                                        class=" btn btn-primary ">评价
+                                                </button>
+
+                                                <button v-else-if="bean.state=='finish'" @click="showMyReview(bean.id)"
+                                                        class=" btn btn-primary ">查看我的评价
+                                                </button>
+                                                <a v-if="bean.state=='waitTime'||bean.state=='waitArrive'"
+                                                   id="cancelLink" :aid="bean.id" type="button">
+                                                    <button class="btn btn-warning">取消预订</button>
+                                                </a>
+
+                                            </td>
+                                        </tr>
+										<tr class="orderPageOrderItemTR" style="display: none" :id="'remarkTR'+bean.id">
+											<td colspan="10" align="center">
+												<div class="orderPageOrderItem">
+													<table width="400px" align="center" class="orderPageOrderItemTable">
+														<tr>
+															<input @keyup.enter="update(bean)" :id="'rmid'+bean.id"
+																   v-model="bean.remark" placeholder="告诉管理员你的需求吧！"
+                                                                   :disabled="bean.state!='waitTime'&&bean.state!='waitArrive' ">
+															<span>（按enter键保存）</span>
+														</tr>
+													</table>
+												</div>
+											</td>
+										</tr>
+                                        <tr class="orderPageOrderItemTR" style="display: none" :id="'myReview'+bean.id">
+                                            <td colspan="10" align="center">
+
+                                                <div class="orderPageOrderItem">
+                                                    <table width="400px" align="center" class="orderPageOrderItemTable">
+
+                                                        <tr>
+                                                            <td colspan="2">{{myreview.content}}</td>
+                                                            <td colspan="2">
+                                                                <a class="deleteReviewLink" :mid="myreview.id"
+                                                                   :aid="bean.id" type="button">
+                                                                    <span class="orderListItemDelete glyphicon glyphicon-trash"
+                                                                          style="margin-left: 180px">
+                                                                    </span>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>{{myreview.timeDesc}}</td>
+                                                            <td>{{myreview.stateDesc}}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:replace="include/admin/adminPage::html"></div>
+            </div>
+        </div>
+    </div>
+    <!--    <div th:replace="include/fore/modal4deleteConfirm::html"></div>-->
+    <!--    <div th:replace="include/fore/modal::html"></div>-->
+        <div th:replace="include/fore/modal4login::html"></div>
+</div>
+</body>
+</html>

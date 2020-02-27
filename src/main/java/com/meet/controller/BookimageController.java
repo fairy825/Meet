@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import com.meet.pojo.Admin;
 import com.meet.pojo.Book;
 import com.meet.pojo.Bookimage;
 import com.meet.result.Result;
@@ -47,7 +48,7 @@ public class BookimageController extends BasicController{
 //			@ApiImplicitParam(name="vid", value="场馆id", dataType="Integer"),
 //	})
     @PostMapping("/bookimage")
-    public Result add(@RequestParam("bid") int bid,  MultipartFile image, HttpServletRequest request) throws Exception {
+    public Result add(Admin admin, @RequestParam("bid") int bid,  MultipartFile image, HttpServletRequest request) throws Exception {
 		Bookimage bean = new Bookimage();
 //		Book book = venueService.get(bid);
     	bean.setBookId(bid);
@@ -81,7 +82,7 @@ public class BookimageController extends BasicController{
     }
     
     @DeleteMapping("/bookimage/{id}")
-    public Result delete(@PathVariable("id") int id, HttpServletRequest request) {
+    public Result delete(Admin admin, @PathVariable("id") int id, HttpServletRequest request) {
 		Bookimage bean = bookimageService.get(id);
 		bookimageService.delete(id);
 

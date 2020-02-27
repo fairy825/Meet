@@ -121,13 +121,13 @@ public class BookServiceImpl implements BookService {
     @Override
     public PagedResult search(Integer cid, BookVO bookVO,
                               int stock, int minRating, String sort, int start, int size) {
-        PageHelper.startPage(start, size);
+//        PageHelper.startPage(start, size);
         String isbn = bookVO.getIsbn();
         String title = bookVO.getTitle();
         String author = bookVO.getAuthor();
         String publishing_house = bookVO.getPublishingHouse();
         List<Book> list = null;
-        if (cid == null)
+        if (cid == null||cid==0)
             list = bookMapper.search( isbn, title, author, publishing_house, stock, minRating);
         else
             list = bookMapper.searchByCid(cid, isbn, title, author, publishing_house, stock, minRating);
@@ -149,13 +149,15 @@ public class BookServiceImpl implements BookService {
                 Collections.sort(list, new BookAllComparator());
                 break;
         }
-        PageInfo<Book> pageList = new PageInfo<>(list);
+//        PageHelper.startPage(start, size);
+//        PageInfo<Book> pageList = new PageInfo<>(list);
+        int records = list.size();
 
         PagedResult pagedResult = new PagedResult();
         pagedResult.setPage(start);
-        pagedResult.setTotal(pageList.getPages());
-        pagedResult.setRows(list);
-        pagedResult.setRecords(pageList.getTotal());
+        pagedResult.setTotal(records%size==0?records/size:records/size+1);
+        pagedResult.setRows(list.subList((start-1)*size,start*size));
+        pagedResult.setRecords(records);
 
         return pagedResult;
     }
