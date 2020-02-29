@@ -7,46 +7,16 @@
 
 <div id="workingArea">
 
-    <script>
-        $(function(){
-
-            var data4Vue = {
-                beans: [],
-            };
-
-            //ViewModel
-            var vue = new Vue({
-                el: '#workingArea',
-                data: data4Vue,
-                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
-                    this.list();
-                },
-                methods: {
-                    list:function(){
-                        var url =  "news?start=0&size=5";
-                        axios.get(url).then(function(response) {
-                            console.log(response.data);
-                            vue.pagination = response.data.data;
-                            vue.beans = response.data.data.rows;
-                        });
-                    },
-                }
-            });
-
-        });
-
-    </script>
-
     <div class="container">
         <div class="row header_news_panel">
             <div class="col-sm-4 news-tabs">
                 <p class="news-tabs__title h2">最新新闻</p>
                 <ul class="news-tabs__nav nav nav-tabs shadow_text" role="tablist">
 
-                    <li v-for="bean in beans" role="presentation">
-                        <a href="#home" role="tab" data-toggle="tab">
-                            <span class="time">{{bean.timeDesc}}</span>
-                            {{bean.title}}
+                    <li th:each="bean,state : ${beans}" role="presentation">
+                        <a th:href="'/news?id='+${bean.id}" role="tab" data-toggle="tab">
+                            <span class="time" th:text="${bean.title}"></span>
+                            <span th:text="${bean.timeDesc}"></span>
                         </a>
                     </li>
                 </ul>

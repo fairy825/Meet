@@ -6,6 +6,7 @@ import com.meet.pojo.Book;
 import com.meet.pojo.vo.AppointVO;
 import com.meet.utils.PagedResult;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 public interface AppointService {
@@ -20,18 +21,43 @@ public interface AppointService {
     public static final String delete = "delete";//删除订单
 
     public PagedResult list(int start, int size);
+
     public PagedResult search(AppointVO appointVO, int start, int size);
-//    public PagedResult searchWithoutDelete(AppointVO appointVO, int start, int size);
+
+    //    public PagedResult searchWithoutDelete(AppointVO appointVO, int start, int size);
     public List<Appoint> findAllWithoutStatic();
+
     public Appoint get(int id);
+
     public void update(Appoint appoint);
-//    public Page4Navigator<Booking> searchByUser(String keyword, int start, int size, int navigatePages);
+
+    //    public Page4Navigator<Booking> searchByUser(String keyword, int start, int size, int navigatePages);
 //    public Page4Navigator<Booking> searchByVenue(String keyword, int start, int size, int navigatePages);
     public Integer total(Book book);
+
     public void saveAppoint(Appoint appoint);
-//    public Page4Navigator<Booking> listBookingsByUser(User user, int start, int size, int navigatePages);
+
+    //    public Page4Navigator<Booking> listBookingsByUser(User user, int start, int size, int navigatePages);
 //    public Appoint searchByUserAndTimeslot(Appoint appoint);
     public List<Appoint> findAll();
+
     public boolean queryOrderIsExist(int userId, int bookId);
+
+    public Integer getMiaoshaResult(int userId, int bookId);
+
+    public void setBookOver(Integer goodsId);
+
+    public boolean getBookOver(Integer goodsId);
+
+    public List<Appoint> queryByBook(Integer bookId);
+
+    public Appoint queryByUserAndBook(int userId, int bookId);
+
+    public String createMiaoshaPath(int userId, int goodsId);
+
+    public boolean checkPath(int userId, int goodsId, String path);
+
+    public BufferedImage createVerifyCode(int userId, long goodsId);
+    public boolean checkVerifyCode(int userId, int goodsId, Integer verifyCode);
 
 }

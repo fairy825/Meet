@@ -27,6 +27,7 @@ public class CategoryController extends BasicController{
         PagedResult pagedResult = categoryService.list(keyword,start,size);
         return Result.success(pagedResult);
     }
+
     @GetMapping("/all")
     public Result<List<Category>> listAll(){
         return Result.success(categoryService.findAll());

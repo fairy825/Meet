@@ -30,6 +30,7 @@ public class CodeMsg {
 	public static CodeMsg BOOK_HAS_ORDERED = new CodeMsg(500401, "已经预订过该书");
 	public static CodeMsg HAS_REVIEWED = new CodeMsg(500402, "已评价过该书");
 	public static CodeMsg CANNOT_REVIEWED = new CodeMsg(500403, "没有评价权限");
+	public static CodeMsg WRONG_VERIFY_CODE = new CodeMsg(500404, "验证码错误");
 
 	//秒杀模块 5005XX
 	public static CodeMsg MIAO_SHA_OVER = new CodeMsg(500500, "商品已经秒杀完毕");

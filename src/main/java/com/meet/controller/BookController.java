@@ -40,7 +40,7 @@ public class BookController extends BasicController {
         return Result.success(pagedResult);
     }
 
-    @PostMapping("/book/search")
+    @PostMapping("/book/search")//redis 查询
     public Result<PagedResult> list(@RequestBody BookVO bookVO,
                                     @RequestParam(value = "stock", defaultValue = "0") Integer stock,
                                     @RequestParam(value = "minRating", defaultValue = "0") Integer minRating,
@@ -54,7 +54,7 @@ public class BookController extends BasicController {
     }
 
     //搜索
-    @PostMapping("/category/{cid}/book/search")
+    @PostMapping("/category/{cid}/book/search")//redis 查询
     public Result<PagedResult> searchFromAdmin(
             @PathVariable("cid") int cid, @RequestBody BookVO bookVO,
             @RequestParam(value = "stock", defaultValue = "0") Integer stock,

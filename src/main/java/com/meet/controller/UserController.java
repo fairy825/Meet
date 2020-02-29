@@ -48,6 +48,7 @@ public class UserController extends BasicController{
 		return Result.success(userVO);
 	}
 
+	//废弃
 	@GetMapping("")
 	public Result<PagedResult> list(@RequestParam(value = "start", defaultValue = "1") Integer start,
 								Integer size) {
@@ -94,16 +95,25 @@ public class UserController extends BasicController{
 			return Result.error(CodeMsg.NEW_PASSWORD_EMPTY);
 		}
 //		userService.updatePassword(String token, Integer id, newPassword)
-		if(userService.queryUserForLogin(user.getName(), MD5Util.formPassToDBPass(formPassword,user.getSalt()))!=null) {
-			String newDbPass = MD5Util.formPassToDBPass(newPassword,user.getSalt());
-			user.setPassword(newDbPass);
-			userService.updateUserInfo(user);
-			UserVO userVO = new UserVO();
-			BeanUtils.copyProperties(user, userVO);
-			return Result.success(userVO);
-		}else{
+		User curUser = userService.queryUsernameIsExist(user.getName());
+		if (curUser == null) {
+			return Result.error(CodeMsg.MOBILE_NOT_EXIST);
+		}
+		//验证密码
+		String dbPass = user.getPassword();
+		String calcPass = MD5Util.formPassToDBPass(formPassword,user.getSalt());
+		/**
+		 * 修改
+		 */
+		if (!calcPass.equals(dbPass)) {
 			return Result.error(CodeMsg.PASSWORD_ERROR);
 		}
+		String newDbPass = MD5Util.formPassToDBPass(newPassword,user.getSalt());
+		user.setPassword(newDbPass);
+		userService.updateUserInfo(user);
+		UserVO userVO = new UserVO();
+		BeanUtils.copyProperties(user, userVO);
+		return Result.success(userVO);
 	}
 
 	@PostMapping("/upload")

@@ -17,5 +17,6 @@ public interface CommentService {
     public Comment get(int id);
     public Integer total(Book book);
     public Comment queryByAppoint(Integer appointId);
+    public PagedResult listNewCommentByBook(int bid,  int size);
 
 }

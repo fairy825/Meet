@@ -5,6 +5,8 @@ import com.meet.pojo.Book;
 import com.meet.pojo.Bookimage;
 import com.meet.service.BookService;
 import com.meet.service.BookimageService;
+import com.meet.utils.RedisConstant;
+import com.meet.utils.RedisOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,6 +21,8 @@ public class BookimageServiceImpl implements BookimageService {
     BookimageMapper bookimageMapper;
     @Autowired
     BookService bookService;
+    @Autowired
+    RedisOperator redis;
 
     @Transactional(propagation= Propagation.SUPPORTS)
     @Override
@@ -55,11 +59,18 @@ public class BookimageServiceImpl implements BookimageService {
     @Transactional(propagation= Propagation.REQUIRED)
     @Override
     public void setFirstBookimage(Book book){
+        Bookimage result = redis.get(RedisConstant.BOOKIMAGE_COVER+":"+book.getId(),Bookimage.class);
+        if(result != null) {
+            return ;
+        }
+
+        //更新数据库
         List<Bookimage> singleImages = listByBook(book.getId());
         book.setBookImages(singleImages);
         if(!singleImages.isEmpty())
             book.setFirstBookImage(singleImages.get(0));
         else
             book.setFirstBookImage(new Bookimage());
+
     }
 }

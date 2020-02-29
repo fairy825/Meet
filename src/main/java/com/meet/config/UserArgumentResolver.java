@@ -54,12 +54,12 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
         String byToken = userService.getToken(response, Integer.valueOf(userId));
         if(byToken==null) {//redistoken==null
-            response.sendRedirect("login");
+//            response.sendRedirect("login");
             return null;
         }else if(byToken.equals(token)){
             return userService.queryUserInfo(Integer.valueOf(userId));
         }else{//账号被挤出
-            response.sendRedirect("login");
+//            response.sendRedirect("login");
             return null;
         }
 

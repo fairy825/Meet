@@ -46,12 +46,19 @@ public class CommentController extends BasicController {
         return Result.success(pagedResult);
     }
 
+    @GetMapping("/book/{bid}/comment/new")
+    public Result<PagedResult> listNewComment(@PathVariable("bid") int bid,
+                                    Integer size) {
+        if (size == null) size = PAGE_SIZE;
+        PagedResult pagedResult = commentService.listNewCommentByBook(bid, size);
+        return Result.success(pagedResult);
+    }
 
     @GetMapping("/comment/mine")
-    public Result<Comment> myreview(HttpServletRequest request,@RequestParam(value = "aid") Integer aid){
-        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
-                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
-        if(userId ==null)
+    public Result<Comment> myreview(User user, HttpServletRequest request,@RequestParam(value = "aid") Integer aid){
+//        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+//                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(user ==null)
             return Result.error(CodeMsg.NOT_LOGIN);
 
         Comment comment = commentService.queryByAppoint(aid);
@@ -79,11 +86,11 @@ public class CommentController extends BasicController {
 //            @ApiImplicitParam(name = "bid", value = "订单id", required = true, dataType = "Integer")
 //    })
     @PostMapping("/comment/{bid}")
-    public Result add(HttpServletRequest request, @RequestBody Comment comment, @PathVariable("bid") int bid,
+    public Result add(User user, HttpServletRequest request, @RequestBody Comment comment, @PathVariable("bid") int bid,
                       @RequestParam(value = "aid") int aid){
-        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
-                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
-        if(userId ==null)
+//        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
+//                userService.USER_ID,RedisConstant.USER_LOGIN_REDIS_SESSION);
+        if(user ==null)
             return Result.error(CodeMsg.NOT_LOGIN);
 
 
@@ -96,7 +103,7 @@ public class CommentController extends BasicController {
 
         bookService.addRating(bid,comment.getRating());
 
-        comment.setUserId(userId);
+        comment.setUserId(user.getId());
         comment.setBookId(bid);
         comment.setState(commentService.pass);
         comment.setCreateDate(new Date());
@@ -108,10 +115,8 @@ public class CommentController extends BasicController {
     }
 
     @DeleteMapping("/comment/{id}")
-    public Result suspend(HttpServletRequest request, @PathVariable("id") int id) {
-        Integer userId = isLogin(request,userService.COOKI_NAME_TOKEN,
-                userService.USER_ID, RedisConstant.USER_LOGIN_REDIS_SESSION);
-        if(userId ==null)
+    public Result suspend(User user, HttpServletRequest request, @PathVariable("id") int id) {
+        if(user ==null)
             return Result.error(CodeMsg.NOT_LOGIN);
 
         Integer appointId = commentService.get(id).getAppointId();

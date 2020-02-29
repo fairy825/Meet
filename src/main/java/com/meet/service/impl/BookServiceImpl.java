@@ -1,5 +1,6 @@
 package com.meet.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.meet.comparator.BookAllComparator;
@@ -14,6 +15,9 @@ import com.meet.pojo.bo.BookBO;
 import com.meet.pojo.vo.BookVO;
 import com.meet.service.*;
 import com.meet.utils.PagedResult;
+import com.meet.utils.RedisConstant;
+import com.meet.utils.RedisOperator;
+import com.meet.utils.SpringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +30,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -42,6 +47,8 @@ public class BookServiceImpl implements BookService {
     CommentService commentService;
     @Autowired
     BookimageService bookimageService;
+    @Autowired
+    RedisOperator redis;
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
@@ -103,6 +110,8 @@ public class BookServiceImpl implements BookService {
         average = (average * reviewCount + rating) / (reviewCount + 1);
         book.setRating(average);
         bookMapper.updateByPrimaryKey(book);
+        redis.del(RedisConstant.BOOK_INFO_ID+":"+bid);
+
     }
 
     public void deleteRating(int bid, int rating) {
@@ -115,6 +124,8 @@ public class BookServiceImpl implements BookService {
             average = (average * reviewCount - rating) / (reviewCount - 1);
         book.setRating(average);
         bookMapper.updateByPrimaryKey(book);
+        redis.del(RedisConstant.BOOK_INFO_ID+":"+bid);
+
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -184,6 +195,9 @@ public class BookServiceImpl implements BookService {
         Book book = bookMapper.selectByPrimaryKey(id);
         if (book.getStock() <= 0) return false;
         bookMapper.reduceStock(id);
+        redis.decr(RedisConstant.BOOK_STOCK+":"+id,1);
+        redis.del(RedisConstant.BOOK_INFO_ID+":"+id);
+        redis.del(RedisConstant.BOOK_SOLDOUT+":"+id);
         return true;
     }
 
@@ -192,6 +206,9 @@ public class BookServiceImpl implements BookService {
     public boolean addStock(int id) {
         Book book = bookMapper.selectByPrimaryKey(id);
         bookMapper.addStock(id);
+        redis.incr(RedisConstant.BOOK_STOCK+":"+id,1);
+        redis.del(RedisConstant.BOOK_INFO_ID+":"+id);
+        redis.del(RedisConstant.BOOK_SOLDOUT+":"+id);
         return true;
     }
 
@@ -199,18 +216,36 @@ public class BookServiceImpl implements BookService {
     @Override
     public void delete(int id) {
         bookMapper.deleteByPrimaryKey(id);
+        //处理缓存
+        Set<String> str = redis.keys("book*");
+        for (String s : str)
+            redis.del(s);
+//        redis.del(RedisConstant.BOOK_INFO_ID+":"+id);
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public Book get(int id) {
-        Book book = bookMapper.selectByPrimaryKey(id);
-        return book;
+        //取缓存
+        Book result = JSONObject.parseObject(redis.get(RedisConstant.BOOK_INFO_ID+":"+id),
+                Book.class);
+        if(result != null) {
+            return result;
+        }
+        //取数据库
+        result = bookMapper.selectByPrimaryKey(id);
+        if(result != null) {
+            redis.setBean(RedisConstant.BOOK_INFO_ID+":"+id, result);
+        }
+        return result;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void update(BookBO bookBO) {
+        Book curBook = get(bookBO.getId());
+        //取user
+        //更新数据库
         List<Integer> cs = bookBO.getCategories();
         bookMapper.deleteCategory(bookBO.getId());
         for(Integer c: cs){
@@ -219,6 +254,12 @@ public class BookServiceImpl implements BookService {
         Book book = new Book();
         BeanUtils.copyProperties(bookBO,book);
         bookMapper.updateByPrimaryKeySelective(book);
+        //处理缓存
+//        BeanUtils.copyProperties(user,curUser);
+        SpringUtil.copyPropertiesIgnoreNull(bookBO,curBook);
+        redis.del(RedisConstant.BOOK_SOLDOUT+":"+curBook.getId());
+        redis.setBean(RedisConstant.BOOK_INFO_ID+":"+curBook.getId(), curBook);
+        redis.set(RedisConstant.BOOK_STOCK+":"+curBook.getId(), String.valueOf(curBook.getStock()));
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)

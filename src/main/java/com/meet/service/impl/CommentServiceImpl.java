@@ -7,11 +7,17 @@ import com.meet.mapper.CommentMapperCustom;
 import com.meet.pojo.Appoint;
 import com.meet.pojo.Book;
 import com.meet.pojo.Comment;
+import com.meet.pojo.User;
 import com.meet.pojo.vo.CommentVO;
 import com.meet.service.AppointService;
+import com.meet.service.BookService;
 import com.meet.service.CommentService;
+import com.meet.service.UserService;
 import com.meet.utils.PagedResult;
+import com.meet.utils.RedisConstant;
+import com.meet.utils.RedisOperator;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -33,19 +39,18 @@ public class CommentServiceImpl implements CommentService {
     CommentMapperCustom commentMapperCustom;
     @Autowired
     AppointService appointService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    BookService bookService;
+    @Autowired
+    RedisOperator redis;
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public PagedResult listByBook(int bid, int status, int start, int size) {
         PageHelper.startPage(start, size);
-//        Example commentExample = new Example(Comment.class);
-//        Criteria criteria = commentExample.createCriteria();
-//        criteria.andEqualTo("bookId", bid);
-//        List<Comment> list = new ArrayList<>();
-//        if (status == 1)
-//            criteria.andEqualTo("state", pass);
-//        list = commentMapper.selectByExample(commentExample);
-        List<CommentVO> list = commentMapperCustom.listByBook(bid,0);
+        List<CommentVO> list = commentMapperCustom.listByBook(bid, status);
         PageInfo<CommentVO> pageList = new PageInfo<>(list);
 
         PagedResult pagedResult = new PagedResult();
@@ -55,6 +60,24 @@ public class CommentServiceImpl implements CommentService {
         pagedResult.setRecords(pageList.getTotal());
 
         return pagedResult;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedResult listNewCommentByBook(int bid,  int size) {
+            List<String> strs = redis.lRange(RedisConstant.BOOK_COMMENT + ":" + bid, 0, size - 1);
+
+            List<CommentVO> list = new ArrayList<>();
+            for (String s : strs) {
+                list.add(redis.stringToBean(s, CommentVO.class));
+            }
+            PagedResult pagedResult = new PagedResult();
+            pagedResult.setPage(1);
+            pagedResult.setTotal(1);
+            pagedResult.setRows(list);
+            pagedResult.setRecords(size);
+
+            return pagedResult;
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -76,12 +99,21 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void saveComment(Comment comment) {
+        CommentVO commentVO = new CommentVO();
+        BeanUtils.copyProperties(comment, commentVO);
+        Book book = bookService.get(comment.getBookId());
+        User user = userService.queryUserInfo(comment.getUserId());
+        commentVO.setBookIsbn(book.getIsbn());
+        commentVO.setBookName(book.getTitle());
+        commentVO.setUserName(user.getName());
+        redis.lpush(RedisConstant.BOOK_COMMENT + ":" + comment.getBookId(), redis.beanToString(commentVO));
         commentMapper.insertUseGeneratedKeys(comment);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void delete(int id) {
+//        redis.del(RedisConstant.BOOK_COMMENT + ":" + get(id).getBookId());
         commentMapper.deleteByPrimaryKey(id);
     }
 

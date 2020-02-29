@@ -3,10 +3,13 @@ package com.meet.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.meet.pojo.vo.UserVO;
+import com.meet.result.CodeMsg;
+import com.meet.result.Result;
 import com.meet.service.UserService;
 import com.meet.utils.PagedResult;
 import com.meet.utils.RedisConstant;
 import com.meet.utils.RedisOperator;
+import com.meet.utils.SpringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +41,18 @@ public class UserServiceImpl implements UserService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public User queryUsernameIsExist(String username) {
+        //取缓存
+        User result = redis.get(RedisConstant.USER_INFO_NAME + ":" + username, User.class);
+        if (result != null) {
+            return result;
+        }
+        //取数据库
         User user = new User();
         user.setName(username);
-        User result = userMapper.selectOne(user);
+        result = userMapper.selectOne(user);
+        if (result != null) {
+            redis.setBean(RedisConstant.USER_INFO_NAME + ":" + username, result);
+        }
         return result;
     }
 
@@ -66,19 +78,39 @@ public class UserServiceImpl implements UserService {
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void updateUserInfo(User user) {
+        User curUser = queryUserInfo(user.getId());
+        //取user
+        //更新数据库
         Example userExample = new Example(User.class);
         Criteria criteria = userExample.createCriteria();
         criteria.andEqualTo("id", user.getId());
         userMapper.updateByExampleSelective(user, userExample);
+        //处理缓存
+//        redis.del(RedisConstant.USER_INFO_ID+":"+curUser.getId());
+//        redis.del(RedisConstant.USER_INFO_NAME+":"+curUser.getName());
+//        BeanUtils.copyProperties(user,curUser);
+        SpringUtil.copyPropertiesIgnoreNull(user, curUser);
+        redis.setBean(RedisConstant.USER_INFO_ID + ":" + curUser.getId(), curUser);
+        redis.setBean(RedisConstant.USER_INFO_NAME + ":" + curUser.getName(), curUser);
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public User queryUserInfo(Integer userId) {
+        //取缓存
+        User result = redis.get(RedisConstant.USER_INFO_ID + ":" + userId, User.class);
+        if (result != null) {
+            return result;
+        }
+        //取数据库
         Example userExample = new Example(User.class);
         Criteria criteria = userExample.createCriteria();
         criteria.andEqualTo("id", userId);
-        User result = userMapper.selectOneByExample(userExample);
+        result = userMapper.selectOneByExample(userExample);
+        if (result != null) {
+            redis.setBean(RedisConstant.USER_INFO_ID + ":" + userId, result);
+            redis.setBean(RedisConstant.USER_INFO_NAME + ":" + result.getName(), result);
+        }
         return result;
     }
 
@@ -91,11 +123,12 @@ public class UserServiceImpl implements UserService {
 //        Admin admin = redis.get(RedisConstant.ADMIN_LOGIN_REDIS_SESSION + ":" + token, Admin.class);
         String token = redis.get(RedisConstant.USER_LOGIN_REDIS_SESSION + ":" + userId);
         // 延长有效期 有效期以最后一次登录的时间为准 所以每次操作都需要更新ttl
-        if (userId != null&&token!=null) {
+        if (userId != null && token != null) {
             addCookie(response, token, userId);
         }
         return token;
     }
+
     @Override
     public boolean addCookie(HttpServletResponse response, String token, Integer userId) {
         // 把token写到cookie当中 传给客户端
@@ -169,17 +202,20 @@ public class UserServiceImpl implements UserService {
         return pagedResult;
     }
 
+    // redis查询
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public PagedResult search(User user, int start, int size) {
         PageHelper.startPage(start, size);
-
         Example userExample = new Example(User.class);
         Criteria criteria = userExample.createCriteria();
-        if (user.getName() != null && !user.getName().equals(""))
-            criteria.andLike("name", "%"+user.getName()+"%");
-        if (user.getNickname() != null && !user.getNickname().equals(""))
-            criteria.andLike("nickname", "%"+user.getNickname()+"%");
+        if (user.getName() != null && !user.getName().equals("")) {
+            criteria.andLike("name", "%" + user.getName() + "%");
+        }
+        if (user.getNickname() != null && !user.getNickname().equals("")) {
+            criteria.andLike("nickname", "%" + user.getNickname() + "%");
+        }
+
         List<User> list = userMapper.selectByExample(userExample);
         PageInfo<User> pageList = new PageInfo<>(list);
 

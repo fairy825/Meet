@@ -34,7 +34,8 @@
                             <span class="wsmenu-click"></span>
                             <a href="forenews">新闻</a>
                         </li>
-                        <li th:if="${null!=user}">
+<!--                        <li th:if="${null!=user}">-->
+                        <li>
                             <span class="wsmenu-click"></span>
                             <a href="#nowhere">个人中心
                                 <span class="arrow"></span>
@@ -53,12 +54,16 @@
                 </nav>
             </div>
         </div>
-        <span th:if="${null!=user}" style="font-size: medium;">
-			<a th:text="${user.name}" style="margin-left: 500px;"></a>
-			<a href="logout">退出</a>
+        <span style="font-size: medium;">
+<!--			<a th:text="${user.name}" style="margin-left: 500px;"></a>-->
+			<a href="logout">注销</a>
 		</span>
-        <span th:if="${null==user}" style="font-size: medium;">
-            <a href="login">登录/注册</a>
-        </span>
+<!--        <span th:if="${null!=user}" style="font-size: medium;">-->
+<!--			<a th:text="${user.name}" style="margin-left: 500px;"></a>-->
+<!--			<a href="logout">退出</a>-->
+<!--		</span>-->
+<!--        <span th:if="${null==user}" style="font-size: medium;">-->
+<!--            <a href="login">登录/注册</a>-->
+<!--        </span>-->
     </div>
 </div>

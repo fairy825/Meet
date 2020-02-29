@@ -6,6 +6,8 @@
 <div th:replace="include/fore/navigator::html"></div>
 <div id="workingArea">
     <script>
+        var id = getUrlParms("id");
+
         function GetDateStr(AddDayCount) {
             var dd = new Date();
             dd.setDate(dd.getDate() + AddDayCount);//获取AddDayCount天后的日期
@@ -19,11 +21,8 @@
         var tomorrow = GetDateStr(1);
         var aftertomorrow = GetDateStr(2);
         $(function () {
-            var id = getUrlParms("id");
             var data4Vue = {
                 bean: {},
-                tss: [],
-                ts: {},
                 date: 0,
                 messages: [],
                 pagination: {},
@@ -64,7 +63,7 @@
                         });
                     },
                     list: function (start) {
-                        var url2 = "book/" + id + "/comment?start=" + start + "&status=1";
+                        var url2 = "book/" + id + "/comment/new";
                         axios.get(url2).then(function (response) {
                             console.log(response.data);
 
@@ -72,20 +71,67 @@
                             vue.messages = response.data.data.rows;
                         });
                     },
-                    buy: function () {
-                        var url = "appoint/makeOrder/" + id + "?remark=" + this.remark+"&date="+this.date;
+                    getResult: function (bookId) {
+                        console.log("in result");
+                        console.log("bookId: "+bookId);
+
+                        var url = "appoint/result/" + bookId;
+                        axios.get(url).then(function (response) {
+                            var res = response.data;
+                            console.log(res);
+                            if (res.code == 0) {
+                                var result = res.data;
+                                if(result < 0){
+                                    layer.msg("对不起，预订失败");
+                                }else if(result == 0){//继续轮询
+                                    setTimeout(function(){
+                                        vue.getResult(bookId);
+                                    }, 400);
+                                }else{
+                                    layer.msg("恭喜你，预订成功！请返回订单页面查看");
+                                }
+
+                            } else {
+                                layer.msg(res.msg);
+                                if (res.code == 500105) {
+                                    $("#loginModal").modal('show');
+                                }
+                            }
+                        });
+                    },
+                    makeOrder: function (path) {
+                        console.log("path: "+path);
+                        var url = "appoint/makeOrder/" + path+"/"+id + "?remark=" + this.remark + "&date=" + this.date;
                         axios.get(url).then(function (response) {
                             var result = response.data;
                             if (result.code == 0) {
-                                layer.msg("预订成功！")
-                                // $("#myModal").modal('show');
-                            } else{
+                                layer.msg("排队中");
+                                setTimeout(function () {
+                                    vue.getResult(id);
+                                }, 500);
+                                vue.getResult(id);
+                            } else {
                                 layer.msg(result.msg);
-                                if(result.code==500105){
+                                if (result.code == 500105) {
                                     $("#loginModal").modal('show');
                                 }
                             }
 
+                        });
+                    },
+                    buy: function () {
+                        var url = "appoint/path?bookId=" + id+"&verifyCode="+$("#verifyCode").val();
+                        axios.get(url).then(function (response) {
+                            var result = response.data;
+                            if (result.code == 0) {
+                                var path = result.data;
+                                vue.makeOrder(path);
+                            } else {
+                                layer.msg(result.msg);
+                                if (result.code == 500105) {
+                                    $("#loginModal").modal('show');
+                                }
+                            }
                         });
                     },
                     jump: function (page) {
@@ -107,7 +153,7 @@
                             return;
                         }
                         var salt = g_passsword_salt;
-                        var str = ""+salt.charAt(0)+salt.charAt(2) + inputPass +salt.charAt(5) + salt.charAt(4);
+                        var str = "" + salt.charAt(0) + salt.charAt(2) + inputPass + salt.charAt(5) + salt.charAt(4);
                         this.user.password = md5(str);
                         var url = "login";
 
@@ -133,6 +179,12 @@
             $("img.smallImage").mouseenter(function () {
                 var bigImageURL = $(this).attr("bigImageURL");
                 $("img.bigImg").attr("src", bigImageURL);
+            });
+            $("#verifyCodeImg").click(function () {
+                console.log("click");
+                $("#verifyCodeImg").attr("src",
+                    "/appoint/verifyCode?bookId="+id+"&timestamp="+new Date().getTime());
+
             });
         }
 
@@ -229,12 +281,20 @@
                                                     <option value="1">{{tomorrow}}</option>
                                                     <option value="2">{{aftertomorrow}}</option>
                                                 </select>
-                                                <input v-model="remark" placeholder="告诉管理员你的需求吧！" />
+                                                <input v-model="remark" placeholder="告诉管理员你的需求吧！"/>
                                             </div>
-
-                                            <button class="btn-primary" @click="buy">
-                                                预约
-                                            </button>
+<!--                                            验证码-->
+                                            <div class="row">
+                                                <div class="form-inline">
+                                                    <img id="verifyCodeImg" width="80" height="32"
+                                                         :src="'/appoint/verifyCode?bookId='+bean.id"/>
+                                                    <input id="verifyCode"  class="form-control"/>
+                                                    <button class="btn-primary" @click="buy"
+                                                            :disabled="bean.stock==0">
+                                                        预约
+                                                    </button>
+                                                </div>
+                                            </div>
 
                                         </div>
                                     </div>
@@ -265,9 +325,9 @@
 
                         </div>
                     </div>
-                    <div style="margin-left: 500px">
-                        <div th:replace="include/admin/adminPage::html" style="margin-left: 200px"></div>
-                    </div>
+<!--                    <div style="margin-left: 500px">-->
+<!--                        <div th:replace="include/admin/adminPage::html" style="margin-left: 200px"></div>-->
+<!--                    </div>-->
                 </div>
             </div>
         </div>
@@ -287,7 +347,7 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div>
-    <div th:replace="include/fore/modal4login::html" ></div>
+    <div th:replace="include/fore/modal4login::html"></div>
 
 </div>
 </body>
